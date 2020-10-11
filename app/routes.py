@@ -5,7 +5,7 @@ from app import db
 @app.route('/')
 def hello_world():
     name=db.get('name') or'World'
-    return 'Hello %s!' % name + session['test']
+    return 'Hello %s!' % name
 
 @app.route('/setname/<name>')
 def setname(name):
