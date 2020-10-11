@@ -3,7 +3,9 @@ import redis
 from flask import Flask
 
 app = Flask(__name__)
-db=redis.from_url(os.environ['REDISCLOUD_URL'])
+
+REDISCLOUD_URL = os.environ['REDISCLOUD_URL']
+db=redis.from_url(REDISCLOUD_URL)
 
 
 @app.route('/')
