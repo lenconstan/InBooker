@@ -1,9 +1,9 @@
 from flask import Flask
 from config import Config
 import redis
-from flask_session import Session
 
-sess=Session()
+
+
 
 
 
