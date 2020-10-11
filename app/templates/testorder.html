@@ -1,0 +1,122 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container-fluid">
+    <form method="post" action="">
+        {{ form.hidden_tag() }}
+         <fieldset class="form-group">
+            <div class="jumbotron">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <h4>
+                            Ordergegevens
+                        </h4>
+                        <table>
+                            <th>Ordernummer:  </th>
+                            <td>{{ session['orderdict']['items'][0].reference }}</td>
+                          </tr>
+                          <tr>
+                            <th>Opdrachtgever:  </th>
+                            <td>{{ session['orderdict']['items'][0].assignment.party_name }}</td>
+                          </tr>
+                          <tr>
+                            <th>Naam:  </th>
+                            <td>{{ session['orderdict']['items'][0].address.full_name }}</td>
+                          </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="jumbotron">
+                <div class="col">
+                    <h5>SayWhen</h5>
+                    <div class="row">
+                        <div class="col">
+
+                            <div class="custom-control custom-switch">
+                                {% if session['saywhen'] == '1' %}
+                                <input type="checkbox" name="saywhen_switch" class="custom-control-input" disabled id="customSwitch1" checked>
+                                {% elif session['saywhen'] == '0' %}
+                                <input type="checkbox" name="saywhen_switch" class="custom-control-input" id="customSwitch1">
+                                {% endif %}
+                                <label class="custom-control-label" for="customSwitch1">Activeer SayWhen</label>
+                            </div>
+                        </div>
+                    </div>
+                <h5>Tags</h5>
+                <div class="row">
+                    <div class="col">
+                    <div class="custom-control custom-switch">
+                        {% if session['bool_2mans'] == false %}
+                        <input type="checkbox" name="tweemans_switch" class="custom-control-input" id="customSwitch2">
+                        {% elif session['bool_2mans'] == true %}
+                        <input type="checkbox" name="tweemans_switch" class="custom-control-input" disabled id="customSwitch2" checked>
+                        {% endif %}
+                        <label class="custom-control-label" for="customSwitch2">2mans</label>
+                    </div>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" name="laadklep_switch" class="custom-control-input" disabled id="customSwitch3">
+                        <label class="custom-control-label" for="customSwitch3">Laadklep</label>
+                    </div>
+                </div>
+                    <div class="col">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" name="viermans_switch" class="custom-control-input" id="customSwitch4">
+                            <label class="custom-control-label" for="customSwitch4">4mans</label>
+                        </div>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" name="project_switch" class="custom-control-input" disabled id="customSwitch5">
+                            <label class="custom-control-label" for="customSwitch5">Project</label>
+                        </div>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" name="bouwpakket_switch" class="custom-control-input" disabled id="customSwitch6">
+                            <label class="custom-control-label" for="customSwitch6">Bouwpakket</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <h5>Laadregels</h5>
+                {% for i in session['str_package_lines_descriptions'] %}
+                    <div class="row">
+                    <div class="col-xs-3">
+                        <div class="input-group input-group-sm mb-3">
+                          <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroup-sizing-sm">Loc.</span>
+                          </div>
+                          <input type="text" class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <p class="col-9 d-flex justify-content-center"> {{ i }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+                <div class="col">
+                    <div >
+                     <div>
+                      <h5 style="display:inline-block;">Notitie</h5>
+                      <button id="add_button" style="display:inline-block;margin-left:240px;" type="button" class="btn btn-outline-info" onClick="$('#add_button').hide()" data-toggle="collapse" data-target="#comments">Add</button>
+                     </div>
+                     <div id="comments" class="collapse ">
+                      <textarea style="resize:none;width:90%;" class="input xlarge" rows="4" id="comment-box" name="comment-box" placeholder="Type your comment here..."></textarea>
+                     </div>
+                    </div>
+                </div>
+            <div class="row">
+                <div class="jumbotron">
+                    <div class="col">
+                        <div class="form-group">
+                            {{ form.submit(class="btn btn-outline-info") }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+         </fieldset>
+    </form>
+</div>
+
+
+
+{% endblock content %}

@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <div class="jumbotron">
+                    <legend class="border-bottom mb-4">Scan Order:</legend>
+                    <div class="form-group">
+                        {{ form.raw_barcode.label(class="form-control-label") }}
+                        {% if form.raw_barcode.errors %}
+                            {{ form.raw_barcode(class="form-control form-control-lg is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.raw_barcode.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.raw_barcode(class="form-control form-control-lg") }}
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.submit(class="btn btn-outline-info") }}
+                    </div>
+                </div>
+
+            </fieldset>
+
+
+
+        </form>
+
+  </div>
+
+{% endblock content %}
