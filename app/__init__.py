@@ -1,4 +1,4 @@
-from flask import Flask, session, render_template, url_for, request
+from flask import Flask, session, render_template, url_for, request, redirect, flash
 from config import Config
 import redis
 

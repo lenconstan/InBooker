@@ -1,10 +1,19 @@
-from app import app, Session, session, render_template, url_for, request
+from app import app, Session, session, render_template, url_for, request, redirect
 from app import db
-from app.forms import LoginForm
+from app.forms import LoginForm, GetForm, OrderForm
 from flask import request
+import json
 
 import requests
-from app import apifunctions
+from app.apifunctions import get_activity
+
+@app.route('/test')
+def test():
+    disabled = 'disabled'
+    print(session['token'])
+    order_dict = json.loads(db.get(session['token']))['items'][0]
+    session['reference'] = order_dict['reference']
+    return session['reference']
 
 @app.route('/')
 def hello_world():
@@ -15,10 +24,11 @@ def hello_world():
 @app.route('/setname/<name>')
 def setname(name):
     db.set('name',name)
+    db.expire('name', 20)
     return 'Name updated.' + session.get('test')
 
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
 
@@ -34,7 +44,80 @@ def login():
         if POST_authenticate.status_code == 200:
             token = POST_authenticate.json()["token"]
             session['token'] = token
-            session['id'] = 'tempid'
 
-            return redirect(url_for('testpage'))
+
+
+
+            return redirect(url_for('get_order'))
     return render_template('login.html', title='Login', form=form)
+
+
+@app.route('/get_order', methods=['GET', 'POST'])
+def get_order():
+    form = GetForm()
+
+
+    #get the barcode
+    raw_barcode = form.raw_barcode.data
+    if request.method == 'POST' and raw_barcode is not None:
+        db.set(session['token'], json.dumps(get_activity(raw_barcode, session['token'])))
+        db.expire(session['token'], 200)
+        #return redirect(url_for('order'))
+        return redirect(url_for('order'))
+
+    return render_template('get_order.html', title='Activiteit ophalen', form=form)
+
+@app.route('/order', methods=['GET', 'POST'])
+def order():
+    form = OrderForm()
+    disabled = 'disabled'
+    print(session['token'])
+    order_dict = json.loads(db.get(session['token']))['items'][0]
+
+    session['reference'] = order_dict['reference']
+    session['assingment_party_name'] = order_dict['assignment']['party_name']
+    session['name'] = order_dict['address']['full_name']
+
+    session['activityid'] = order_dict['id']
+    session['saywhen'] = order_dict['communication']['saywhen'] # if this variable is '1' Saywhen is activated, if '0' saywehen is not activated
+    #print(str_package_lines_descriptions)
+    session['str_package_lines_descriptions'] = [m + 'x '+n for m,n in zip([i['nr_of_packages'].split('.')[0] for i in order_dict['package_lines']],[i['description'] for i in order_dict['package_lines']])]
+    session['update_dict'] = {}
+    #add current tags to dict that will be posted to retain current tags
+    session['update_dict']['tags'] = order_dict['tags']
+    # update session['update_dict']['tags'] with session['update_dict']['tags'].append({'tag_type_id': TAGID})
+    # tag_type_ids: 2mans: 49, laadklep:53, project: 50, 4mans: 62, bouwpakket: 63
+
+    #check current tags
+    session['bool_2mans'] = '49' in [i['tag_type_id'] for i in order_dict['tags']]
+    session['bool_laadklep'] = '53' in [i['tag_type_id'] for i in order_dict['tags']]
+    session['bool_project'] = '50' in [i['tag_type_id'] for i in order_dict['tags']]
+    session['bool_4mans'] = '62' in [i['tag_type_id'] for i in order_dict['tags']]
+    session['bool_bouwpakket'] = '63' in [i['tag_type_id'] for i in order_dict['tags']]
+
+    # get form toggle state
+    if form.validate_on_submit():
+        #saywhen
+        if session['saywhen'] == '0' and request.form.get('saywhen_switch') == 'on':
+            session['update_dict']['communication'] = {'saywhen': '1', 'send_invite': '1'}
+            session['update_dict']['reference'] =  '*' + order_dict['reference']
+            print(session['update_dict'])
+        else:
+            print('uit')
+
+        #tags
+        if session['bool_2mans'] == False and request.form.get('tweemans_switch') == 'on':
+            session['token']['update_dict']['tags'] = session['update_dict']['tags'].append({'tag_type_id': '49'})
+
+
+        #update activity
+        if bool(['update_dict']) is True:
+            udac = update_activity(session['activityid'], session['update_dict'], session['token'])
+            print(udac)
+        return redirect(url_for('get_order'))
+
+
+
+
+
+    return render_template('order.html', title='Order', form=form)

@@ -7,3 +7,10 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
+
+class GetForm(FlaskForm):
+    raw_barcode = StringField('Barcode', validators=[DataRequired()])
+    submit = SubmitField('Zoek')
+
+class OrderForm(FlaskForm):
+    submit = SubmitField("Update")
