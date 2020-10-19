@@ -1,15 +1,21 @@
 {% extends "layout.html" %}
 {% block content %}
-    {% for post in posts%}
-      <article class="media content-section">
-        <div class="media-body">
-          <div class="article-metadata">
-            <a class="mr-2" href="#">{{ post.author }}</a>
-            <small class="text-muted">{{ post.date }}</small>
-          </div>
-          <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
-          <p class="article-content">{{ post.content }}</p>
-        </div>
-      </article>
-    {% endfor %}
+  <article class="media content-section">
+    <div class="media-body">
+      <div class="article-metadata">
+        <small class="text-muted">19-10-2020</small>
+      </div>
+      <h2><a class="article-title" href="#">Over InBooker</a></h2>
+      <p class="article-content">InBooker is een WebApp gemaakt om het inboeken van orders te vereenvoudigen. Door het scannen van een barcode wordt de informatie van de activiteit opgehaald.
+      Gegevens die relevant zijn voor het inboeken van orders kunnen op één scherm aangepast en ge-update worden. Door gebruik te maken van de barcodes die op onze verzendlabels zitten hoef je niet meer ordernummers te onthouden en handmatig over te typen.</p>
+      <h5>Waarom zou ik het gebruiken?</h5>
+      <p class="article-content">Om het inboekproces te versnellen en fouten te voorkomen. Daarnaast kun je nu ook met je mobiele devices orders op een gemakkelijke manier inboeken.</p>
+      <h5>Hoe gebruik ik InBooker?</h5>
+      <p class="article-content">Je kan gewoon inloggen met je Bumbal gegevens. Daarnaast heb je nog een barcodescanner nodig om orders te kunnen scannen.</p>
+      <h5>Waarom gaat het zo traag?</h5>
+      <p class="article-content">Inbooker is nu gehost op een gratis server. Deze is langzaam!</p>
+      <h5>Ik mis nog dingen</h5>
+      <p class="article-content">Dat kan. In principe is alles mogelijk. In zijn huidige vorm moet je InBooker zien als concept. Wanneer dit goed werkt kunnen we het gaan uitbouwen en nog veel meer tijdrovende klussen automatiseren zoals stoptijden, retouren en het lopen van laadlijsten.</p>
+    </div>
+  </article>
 {% endblock content %}

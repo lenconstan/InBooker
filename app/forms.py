@@ -13,4 +13,5 @@ class GetForm(FlaskForm):
     submit = SubmitField('Zoek')
 
 class OrderForm(FlaskForm):
+    locatie = StringField("Loc.")
     submit = SubmitField("Update")
