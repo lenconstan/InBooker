@@ -16,7 +16,7 @@ def test():
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    return render_template('home.html', title='Over Inbooker')
+    return render_template('home.html', title='InBooker')
 
 @app.route('/error', methods=['GET', 'POST'])
 def error():
@@ -55,7 +55,7 @@ def get_order():
                 flash('De ingevoerde order kon niet worden gevonden', 'danger')
                 return redirect(url_for('get_order'))
         else:
-            flash('Er is iets misgegaan, probeer het opnieuw')
+            flash('Er is iets misgegaan, probeer het opnieuw', 'danger')
 
 
     return render_template('get_order.html', title='Activiteit ophalen', form=form)
