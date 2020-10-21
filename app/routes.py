@@ -66,8 +66,34 @@ def get_order():
         else:
             flash('Er is iets misgegaan, log opnieuw in en probeer het nog een keer', 'danger')
 
-
     return render_template('get_order.html', title='Activiteit ophalen', form=form)
+
+@app.route('/scan_order', methods=['GET', 'POST'])
+def scan_order():
+    form = GetForm()
+    if request.method == 'POST':
+        if request.form.get('scan-input') is not None:
+            try:
+                act = get_activity(request.form.get("scan-input"), session['token'])
+            except KeyError:
+                flash('Je bent nog niet ingelogd, graag even inloggen!', 'danger')
+                return redirect(url_for('login'))
+            if act[1] == 200:
+                if act[0]['items']:
+                    db.set(session['token'], json.dumps(act[0]))
+                    db.expire(session['token'], 200)
+                    return redirect(url_for('order'))
+                else:
+                    flash('De ingevoerde order kon niet worden gevonden', 'danger')
+                    return redirect(url_for('scan_order'))
+            if act[1] == 403:
+                flash('Je sessie is verlopen, graag opnieuw inloggen!', 'danger')
+                return redirect(url_for('login'))
+
+        else:
+            flash('Er is iets misgegaan, log opnieuw in en probeer het nog een keer', 'danger')
+
+    return render_template('scanorder.html', title='Activiteit ophalen', form=form)
 
 @app.route('/order', methods=['GET', 'POST'])
 def order():

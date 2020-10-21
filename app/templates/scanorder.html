@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<form method="POST" action="/scan_order">
+    {{ form.hidden_tag() }}
+    <fieldset class="form-group">
+        <div class="jumbotron">
+          <legend class="border-bottom mb-4">Scan Order (TEST!!!):</legend>
+            <div class="form-group">
+              <head>
+              <meta charset="UTF-8">
+              <title>Scandit Web SDK</title>
+
+              <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0'/>
+
+              <!-- Add the library, as explained on http://docs.scandit.com/stable/web/index.html -->
+              <script src="https://cdn.jsdelivr.net/npm/scandit-sdk@4.x"></script>
+            </head>
+            <form action="/scandit" method="post">
+
+            <div class="scanner">
+              <body onclick="console.log('body clicked')">
+                  <div id="scandit-barcode-picker"></div>
+                  <div id="input-container">
+                      <input id="scan-input" name='scan-input' type="text" placeholder="Scan Barcode">
+
+                      <input class="btn btn-outline-info" type="submit" value="Zoek">
+
+                  </div>
+
+                  <script>
+                      document.addEventListener("DOMContentLoaded", function() {
+                        scan();
+                        });
+                      function scan() {
+                          startScanning();
+                      }
+                      function showScanner() {
+                          scannerContainer.style.opacity = "1";
+                          scannerContainer.style.zIndex = "1";
+                      }
+                      function hideScanner() {
+                          scannerContainer.style.opacity = "0";
+                          scannerContainer.style.zIndex = "-1";
+                      }
+                      function startScanning() {
+                          showScanner();
+                          if (picker) {
+                              picker.resumeScanning();
+                          }
+                      }
+                      function stopScanning() {
+                          hideScanner();
+                          if (picker) {
+                              picker.pauseScanning();
+                          }
+                      }
+                      // Configure the library and activate it with a license key
+                      const licenseKey = "AcSv7yeyOFcQPJDNvCGT8nU41XcdNK3kxhKRkK9Qqdu5WwxrV1h9kfRxTwqYc40YyT3ZYNV5HHPQdSluXV8YwppJ9oP8UrE4WEsBGqd9/7+oMsymVUgMV91FnENdalzm7Qi0ejsme7azISPLHjIO7ycmlSa7MyC0yGTpEwTP0CRy+LNBaW6OQ1oGTwdx/9e1mXF4/N+kBTwA83GdTWUedp8Mo4CyVLrH5uUcr7ml9uQEtJc+JObylKEdsqCXYktx8eeFY6Mo2ozpDazJe8f5+WGbdDbH3MSIfl0R0adb0IbrQrdnBvTwKKLcdlJqUnr4xF7E9w7bRYO4TgsYlXNkFHpOVcs3QF75s8zfs1IBZyZX1YGDQiUqL7fXk1mv9xhvbTjtwfW/ruKrTW6kZQA3gcTmdnFcK1dO6Jk5ynxMUJBPEDAIVA8K4EsLEMVTmymH6KvUsIZdhel9Ku2nLvx6yWxJrJBa9l6S8s5kb+JuB7lYMqE0+BkXhGWxZ3ObY4E1dmI0UqNWFRnPvRCT4yjWcfe0BjVbwUBAVnnnlIj0meXIc06g24OZRBlwjBlGYRLvCiJBxgQ4KZqSUsElH1lu7//uxOhwTQ4Uu7wH8NjBQF4PdGbOA0uf8HEIs+6qoYaEl8zP/FNzdL7myE+yd6rFVTfE3tCtitIL4WIqjifa+uz8XJQaXDTK/+ObB1XlehaKBr4xa8utFVr7bwcG2kJnTDHg/YkRbyqo0dFTPwCjJ7lpDzR1+OCalRLa1m6dMNejAA5W0Q8zKnManWWUK5eAW4424dG3rXnfXh1CVTxuQm37Kk8iAmzSA7KF5NXZGGnP";
+                      // Configure the engine location, as explained on http://docs.scandit.com/stable/web/index.html
+                      const engineLocation = "https://cdn.jsdelivr.net/npm/scandit-sdk@4.x/build"
+                      ScanditSDK.configure(licenseKey, { engineLocation: engineLocation });
+                      const scannerContainer = document.getElementById("scandit-barcode-picker");
+                      scannerContainer.style.opacity = "0";
+                      scannerContainer.style.zIndex = "-1";
+                      const scanInput = document.getElementById("scan-input");
+                      let picker;
+                      // Create & start the picker
+                      ScanditSDK.BarcodePicker.create(scannerContainer)
+                          .then(barcodePicker => {
+                              picker = barcodePicker;
+                              // Create the settings object to be applied to the scanner
+                              const scanSettings = new ScanditSDK.ScanSettings({
+                                  enabledSymbologies: ["ean8", "ean13", "upca", "upce", "code128", "code39"]
+                              });
+                              picker.applyScanSettings(scanSettings);
+                              picker.on("scan", scanResult => {
+                                  stopScanning();
+                                  scanInput.value = scanResult.barcodes[0].data;
+                              });
+                              picker.on("scanError", error => alert(error.message));
+                              picker.resumeScanning();
+                          })
+                          .catch(alert);
+                  </script>
+                </body>
+            </div>
+                <style>#scan:after {display:none;}</style>
+
+            </div>
+        </div>
+    </fieldset>
+</form>
+
+{% endblock content %}
