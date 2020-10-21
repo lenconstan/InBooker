@@ -34,6 +34,7 @@ def login():
         if POST_authenticate.status_code == 200:
             token = POST_authenticate.json()["token"]
             session['token'] = token
+            session['initials'] = POST_authenticate.json()['user']['name_prefix']
             return redirect(url_for('home'))
         flash('Inloggegevens niet bekend', 'danger')
     return render_template('login.html', title='Login', form=form)
@@ -45,7 +46,11 @@ def get_order():
     #get the barcode
     raw_barcode = form.raw_barcode.data
     if request.method == 'POST' and raw_barcode is not None:
-        act = get_activity(raw_barcode, session['token'])
+        try:
+            act = get_activity(raw_barcode, session['token'])
+        except KeyError:
+            flash('Je bent nog niet ingelogd, graag even inloggen!', 'danger')
+            return redirect(url_for('login'))
         if act[1] == 200:
             if act[0]['items']:
                 db.set(session['token'], json.dumps(act[0]))
@@ -54,8 +59,12 @@ def get_order():
             else:
                 flash('De ingevoerde order kon niet worden gevonden', 'danger')
                 return redirect(url_for('get_order'))
+        if act[1] == 403:
+            flash('Je sessie is verlopen, graag opnieuw inloggen!', 'danger')
+            return redirect(url_for('login'))
+
         else:
-            flash('Er is iets misgegaan, probeer het opnieuw', 'danger')
+            flash('Er is iets misgegaan, log opnieuw in en probeer het nog een keer', 'danger')
 
 
     return render_template('get_order.html', title='Activiteit ophalen', form=form)
@@ -112,7 +121,7 @@ def order():
         #package_lines
         for i in session['str_package_lines_descriptions']:
             if request.form.get(i) != '':
-                session['update_dict']['package_lines'][(session['str_package_lines_descriptions'].index(i))]['description'] = '[' + str(request.form.get(i)) + ' '  + str(date.today().strftime("%d%m")) + ']' + session['update_dict']['package_lines'][(session['str_package_lines_descriptions'].index(i))]['description']
+                session['update_dict']['package_lines'][(session['str_package_lines_descriptions'].index(i))]['description'] = '[' + str(request.form.get(i)) + ' ' + session['initials'] + ' '  + str(date.today().strftime("%d%m")) + ']' + session['update_dict']['package_lines'][(session['str_package_lines_descriptions'].index(i))]['description']
             else:
                 pass
 
