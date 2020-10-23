@@ -91,7 +91,7 @@ def scan_order():
                 return redirect(url_for('login'))
 
         else:
-            flash('Er is iets misgegaan, log opnieuw in en probeer het nog een keer', 'danger')
+            flash('Er is iets mis gegaan, probeer het nog een keer', 'danger')
 
     return render_template('scanorder.html', title='Activiteit ophalen', form=form)
 
