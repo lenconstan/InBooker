@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
 
-<form method="POST" action="/scan_order">
+<form method="POST" action="/scan_order" id="scan_order">
     {{ form.hidden_tag() }}
     <fieldset class="form-group">
         <div class="jumbotron">
@@ -24,9 +24,22 @@
                   <div id="input-container">
                       <input id="scan-input" name='scan-input' type="text" placeholder="Scan Barcode">
 
-                      <input class="btn btn-outline-info" type="submit" value="Zoek">
+                      <button id="btnFetch" class="btn btn-outline-info mb-2" type="submit">Zoek</button>
+                    </div>
 
-                  </div>
+                    <script type="text/javascript">
+                      $(document).ready(function() {
+                        $("#btnFetch").click(function() {
+                          // disable button
+                          $(this).prop("disabled", true);
+                          // add spinner to button
+                          $(this).html(
+                            `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> w8 ff..`
+                          );
+                          $( "#scan_order" ).submit();
+                        });
+                    });
+                    </script>
 
                   <script>
                       document.addEventListener("DOMContentLoaded", function() {

@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-<form method="POST" action="">
+<form method="POST" action="" id="get_order">
     {{ form.hidden_tag() }}
     <fieldset class="form-group">
         <div class="jumbotron">
@@ -19,8 +19,22 @@
                 {% endif %}
             </div>
             <div class="form-group">
-                {{ form.submit(class="btn btn-outline-info") }}
+              <button id="btnFetch" class="btn btn-outline-info mb-2" type="submit">Zoek</button>
             </div>
+
+            <script type="text/javascript">
+              $(document).ready(function() {
+                $("#btnFetch").click(function() {
+                  // disable button
+                  $(this).prop("disabled", true);
+                  // add spinner to button
+                  $(this).html(
+                    `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> w8 ff..`
+                  );
+                  $( "#get_order" ).submit();
+                });
+            });
+            </script>
         </div>
     </fieldset>
 </form>

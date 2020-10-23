@@ -45,7 +45,7 @@ def get_order():
     form = GetForm()
     #get the barcode
     raw_barcode = form.raw_barcode.data
-    if request.method == 'POST' and raw_barcode is not None:
+    if request.method == 'POST' and raw_barcode != '':
         try:
             act = get_activity(raw_barcode, session['token'])
         except KeyError:
@@ -64,7 +64,7 @@ def get_order():
             return redirect(url_for('login'))
 
         else:
-            flash('Er is iets misgegaan, log opnieuw in en probeer het nog een keer', 'danger')
+            flash('Je hebt nog geen barcode gescanned', 'danger')
 
     return render_template('get_order.html', title='Activiteit ophalen', form=form)
 
@@ -72,7 +72,7 @@ def get_order():
 def scan_order():
     form = GetForm()
     if request.method == 'POST':
-        if request.form.get('scan-input') is not None:
+        if request.form.get('scan-input') != '':
             try:
                 act = get_activity(request.form.get("scan-input"), session['token'])
             except KeyError:
@@ -91,7 +91,7 @@ def scan_order():
                 return redirect(url_for('login'))
 
         else:
-            flash('Er is iets mis gegaan, probeer het nog een keer', 'danger')
+            flash('Je hebt nog geen barcode gescanned', 'danger')
 
     return render_template('scanorder.html', title='Activiteit ophalen', form=form)
 
@@ -99,7 +99,7 @@ def scan_order():
 def zxing():
     form = GetForm()
     if request.method == 'POST':
-        if request.form.get('zxing-input') is not None:
+        if request.form.get('zxing-input') != '':
             try:
                 act = get_activity(request.form.get("zxing-input"), session['token'])
             except KeyError:
@@ -118,7 +118,7 @@ def zxing():
                 return redirect(url_for('login'))
 
         else:
-            flash('Er is iets misgegaan probeer het nog een keer', 'danger')
+            flash('Je hebt nog geen barcode gescanned', 'danger')
 
     return render_template('zxing.html', title='Activiteit ophalen', form=form)
 

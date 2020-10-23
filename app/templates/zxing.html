@@ -1,39 +1,53 @@
 {% extends "layout.html" %}
 {% block content %}
-<form method="POST" action="/zxing">
+<form method="POST" action="/zxing" id='zxing'>
     {{ form.hidden_tag() }}
     <fieldset class="form-group">
         <div class="jumbotron">
-          <legend class="border-bottom mb-4">Scan Order (TEST!!!):</legend>
+          <legend class="border-bottom mb-2">Scan Order (TEST!!!):</legend>
             <div class="form-group">
-              <body>
+
 
                 <main class="wrapper" style="padding-top:1em">
 
-                  <section class="container" id="demo-content">
 
 
-                    <div>
-                      <a class="btn btn-outline-info mb-2" id="startButton">Start</a>
-                      <a class="btn btn-outline-info mb-2" id="resetButton">Reset</a>
-                    </div>
-
-                    <div>
-                      <video id="video" width="300" height="200" style="border: 1px solid gray"></video>
-                    </div>
-
-                    <div id="sourceSelectPanel" style="display:none">
-                      <label for="sourceSelect">Selecteer camera:</label>
-                      <select id="sourceSelect" style="max-width:400px">
-                      </select>
-                    </div>
-
-                    <label><h6>Barcode:</h6></label>
-                    <input id="zxing-input" name="zxing-input" type="text" placeholder="Scan Barcode">
-                    <input class="btn btn-outline-info" type="submit" value="Zoek">
+                      <div>
+                        <a class="btn btn-outline-info mb-2" id="startButton">Start</a>
+                        <a class="btn btn-outline-info mb-2" id="resetButton">Reset</a>
+                      </div>
 
 
-                  </section>
+                        <video class="rounded" id="video" width="300" height="200"  alt="Max-width 100%"></video>
+
+
+                      <div id="sourceSelectPanel" style="display:none">
+                        <label for="sourceSelect"><h6>Selecteer camera:</h6></label>
+                        <select class=pb-2 id="sourceSelect" style="max-width:400px">
+                        </select>
+                      </div>
+                      <div>
+                        <label class="pb-0"><h6>Barcode:</h6></label>
+                        <input id="zxing-input" name="zxing-input" type="text" placeholder="Scan Barcode">
+                        <!-- <input class="btn btn-outline-info" type="submit" value="Zoek"> -->
+                        <button id="btnFetch" class="btn btn-outline-info mb-2" type="submit">Zoek</button>
+                      </div>
+
+                      <script type="text/javascript">
+                        $(document).ready(function() {
+                          $("#btnFetch").click(function() {
+                            // disable button
+                            $(this).prop("disabled", true);
+                            // add spinner to button
+                            $(this).html(
+                              `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> w8 ff..`
+                            );
+                            $( "#zxing" ).submit();
+                          });
+                      });
+                      </script>
+
+
 
 
 
@@ -57,7 +71,7 @@
                             sourceOption.value = element.deviceId
                             sourceSelect.appendChild(sourceOption)
                           })
-
+                          videoInputDevices.reverse()
                           sourceSelect.onchange = () => {
                             selectedDeviceId = sourceSelect.value;
                           };
@@ -94,6 +108,7 @@
                   })
                 </script>
             </div>
+          </div>
     </fieldset>
 </form>
 {% endblock content %}
