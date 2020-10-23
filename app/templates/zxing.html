@@ -71,7 +71,7 @@
                             sourceOption.value = element.deviceId
                             sourceSelect.appendChild(sourceOption)
                           })
-                          videoInputDevices.reverse()
+                          videoInputDevices = videoInputDevices.reverse();
                           sourceSelect.onchange = () => {
                             selectedDeviceId = sourceSelect.value;
                           };
