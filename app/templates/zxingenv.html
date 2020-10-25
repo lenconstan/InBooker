@@ -1,35 +1,33 @@
 {% extends "layout.html" %}
 {% block content %}
-<form method="POST" action="/zxing" id='zxing'>
+<form method="POST" action="/zxingenv" id='zxingenv'>
     {{ form.hidden_tag() }}
     <fieldset class="form-group">
         <div class="jumbotron">
-          <legend class="border-bottom mb-2">Scan Order :</legend>
-          <p>ZXING</p>
+          <legend class="border-bottom mb-2">Scan Order:</legend>
+          <p>ZXINGENV</p>
             <div class="form-group">
 
 
                 <main class="wrapper" style="padding-top:1em">
 
-
-
-                      <div>
-                        <a class="btn btn-outline-info mb-2" id="startButton">Start</a>
-                        <a class="btn btn-outline-info mb-2" id="resetButton">Reset</a>
-                      </div>
-
-
                         <video class="rounded" id="video" width="300" height="200"  alt="Max-width 100%"></video>
 
+                        <div>
+                          <a class="btn btn-outline-info mb-2" id="startButton">Start</a>
+                          <a class="btn btn-outline-info mb-2" id="resetButton" >Reset</a>
+                        </div>
+                        <div>
+                          <label class="pb-0"><h6>Barcode:</h6></label>
 
-                      <div id="sourceSelectPanel" style="display:none">
-                        <label for="sourceSelect"><h6>Selecteer camera:</h6></label>
-                        <select class=pb-2 id="sourceSelect" style="max-width:400px">
-                        </select>
+                        </div>
+                        <div>
+                          <input id="zxing-input" name="zxing-input" type="text" placeholder="Scan Barcode">
+                        </div>
+
+
                       </div>
                       <div>
-                        <label class="pb-0"><h6>Barcode:</h6></label>
-                        <input id="zxing-input" name="zxing-input" type="text" placeholder="Scan Barcode">
                         <!-- <input class="btn btn-outline-info" type="submit" value="Zoek"> -->
                         <button id="btnFetch" class="btn btn-outline-info mb-2" type="submit">Zoek</button>
                       </div>
@@ -43,46 +41,22 @@
                             $(this).html(
                               `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> w8 ff..`
                             );
-                            $( "#zxing" ).submit();
+                            $( "#zxingenv" ).submit();
                           });
                       });
                       </script>
-
-
-
-
 
                 </main>
 
                 <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest"></script>
                 <script type="text/javascript">
-                  $( document ).ready(function() {     console.log( "Hello" ); });
                   window.addEventListener('load', function () {
                     let selectedDeviceId;
                     const codeReader = new ZXing.BrowserMultiFormatReader()
                     console.log('ZXing code reader initialized')
-                    codeReader.listVideoInputDevices()
-                      .then((videoInputDevices) => {
-                        const sourceSelect = document.getElementById('sourceSelect')
-                        selectedDeviceId = videoInputDevices[0].deviceId
-                        if (videoInputDevices.length >= 1) {
-                          videoInputDevices.forEach((element) => {
-                            const sourceOption = document.createElement('option')
-                            sourceOption.text = element.label
-                            sourceOption.value = element.deviceId
-                            sourceSelect.appendChild(sourceOption)
-                          })
-
-                          sourceSelect.onchange = () => {
-                            selectedDeviceId = sourceSelect.value;
-                          };
-
-                          const sourceSelectPanel = document.getElementById('sourceSelectPanel')
-                          sourceSelectPanel.style.display = 'block'
-                        }
                         const test = document.getElementById("zxing-input");
                         document.getElementById('startButton').addEventListener('click', () => {
-                          codeReader.decodeFromVideoDevice(selectedDeviceId, 'video', (result, err) => {
+                          codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
                             if (result) {
                               console.log(result)
 
@@ -106,10 +80,10 @@
                       .catch((err) => {
                         console.error(err)
                       })
-                  })
+
                 </script>
             </div>
-          </div>
+
     </fieldset>
 </form>
 {% endblock content %}

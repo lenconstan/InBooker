@@ -39,7 +39,6 @@ def login():
         flash('Inloggegevens niet bekend', 'danger')
     return render_template('login.html', title='Login', form=form)
 
-
 @app.route('/get_order', methods=['GET', 'POST'])
 def get_order():
     form = GetForm()
@@ -54,8 +53,8 @@ def get_order():
         if act[1] == 200:
             if act[0]['items']:
                 db.set(session['token'], json.dumps(act[0]))
-                db.expire(session['token'], 200)
-                return redirect(url_for('order'))
+                db.expire(session['token'], 600)
+                return redirect(url_for('order', predes='get_order'))
             else:
                 flash('De ingevoerde order kon niet worden gevonden', 'danger')
                 return redirect(url_for('get_order'))
@@ -81,11 +80,11 @@ def scan_order():
             if act[1] == 200:
                 if act[0]['items']:
                     db.set(session['token'], json.dumps(act[0]))
-                    db.expire(session['token'], 200)
-                    return redirect(url_for('order'))
+                    db.expire(session['token'], 600)
+                    return redirect(url_for('order', predes='scan_order'))
                 else:
                     flash('De ingevoerde order kon niet worden gevonden', 'danger')
-                    return redirect(url_for('scan_order'))
+                    return redirect(url_for('scan_order/'))
             if act[1] == 403:
                 flash('Je sessie is verlopen, graag opnieuw inloggen!', 'danger')
                 return redirect(url_for('login'))
@@ -108,8 +107,8 @@ def zxing():
             if act[1] == 200:
                 if act[0]['items']:
                     db.set(session['token'], json.dumps(act[0]))
-                    db.expire(session['token'], 200)
-                    return redirect(url_for('order'))
+                    db.expire(session['token'], 600)
+                    return redirect(url_for('order', predes='zxing'))
                 else:
                     flash('De ingevoerde order kon niet worden gevonden', 'danger')
                     return redirect(url_for('zxing'))
@@ -122,8 +121,35 @@ def zxing():
 
     return render_template('zxing.html', title='Activiteit ophalen', form=form)
 
-@app.route('/order', methods=['GET', 'POST'])
-def order():
+@app.route('/zxingenv', methods=['GET', 'POST'])
+def zxingenv():
+    form = GetForm()
+    if request.method == 'POST':
+        if request.form.get('zxing-input') != '':
+            try:
+                act = get_activity(request.form.get("zxing-input"), session['token'])
+            except KeyError:
+                flash('Je bent nog niet ingelogd, graag even inloggen!', 'danger')
+                return redirect(url_for('login'))
+            if act[1] == 200:
+                if act[0]['items']:
+                    db.set(session['token'], json.dumps(act[0]))
+                    db.expire(session['token'], 600)
+                    return redirect(url_for('order', predes='zxingenv'))
+                else:
+                    flash('De ingevoerde order kon niet worden gevonden', 'danger')
+                    return redirect(url_for('zxingenv'))
+            if act[1] == 403:
+                flash('Je sessie is verlopen, graag opnieuw inloggen!', 'danger')
+                return redirect(url_for('login'))
+
+        else:
+            flash('Je hebt nog geen barcode gescanned', 'danger')
+
+    return render_template('zxingenv.html', title='Activiteit ophalen', form=form)
+
+@app.route('/order/<predes>', methods=['GET', 'POST'])
+def order(predes):
     form = OrderForm()
     disabled = 'disabled'
     order_dict = json.loads(db.get(session['token']))['items'][0]
@@ -195,7 +221,7 @@ def order():
             if udac == 200:
                 flash('Activiteit succesvol aangepast!', 'success')
                 udac == 0
-                return redirect(url_for('get_order'))
+                return redirect(url_for(predes))
             else:
                 redirect(url_for('error'))
 
