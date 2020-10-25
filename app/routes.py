@@ -84,7 +84,7 @@ def scan_order():
                     return redirect(url_for('order', predes='scan_order'))
                 else:
                     flash('De ingevoerde order kon niet worden gevonden', 'danger')
-                    return redirect(url_for('scan_order/'))
+                    return redirect(url_for('scan_order'))
             if act[1] == 403:
                 flash('Je sessie is verlopen, graag opnieuw inloggen!', 'danger')
                 return redirect(url_for('login'))
