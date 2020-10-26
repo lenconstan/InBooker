@@ -20,12 +20,12 @@ def get_activity(barcode, token):
             if string[-2] == '-':
                 newstring = string[:-2]
                 string = newstring
-                if 'XLS' in string:
+                if 'XLS' in string and len(string) > 9:
                     string = string[:3] + '00' + string[3:]
             elif string[-3] == '-':
                 newstring = string[:-3]
                 string = newstring
-                if 'XLS' in string:
+                if 'XLS' in string and len(string) > 9:
                     string = string[:3] + '00' + string[3:]
             else:
                 pass
