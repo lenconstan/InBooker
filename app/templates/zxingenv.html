@@ -1,90 +1,91 @@
 {% extends "layout.html" %}
 {% block content %}
-<form method="POST" action="/zxingenv" id='zxingenv'>
-
-    <fieldset class="form-group">
-        <div class="jumbotron">
-          <legend class="border-bottom mb-2">Scan Order:</legend>
-          <p>ZXINGENV</p>
-            <div class="form-group">
-
-
-                <main>
-                      <div class="w-100 p-3">
-                        <video class="rounded" id="video"  width="Max-width 100%"></video>
-                      </div>
+<main>
+  <form method="POST" action="/zxingenv" id='zxingenv'>
+      <fieldset class="form-group">
+          <div class="jumbotron">
+            <legend class="border-bottom mb-2">Scan Order:</legend>
+            <p>ZXINGENV</p>
+              <div class="form-group">
 
 
 
-                        <div>
-                          <label class="pb-0"><h6>Barcode:</h6></label>
-
-                        </div>
-                        <div>
-                          <input id="zxing-input" name="zxing-input" type="text" placeholder="Scan Barcode">
+                        <div class="w-100 p-3">
+                          <video class="rounded" id="video"  width="Max-width 100%"></video>
                         </div>
 
 
-                      </div>
-                      <div>
-                        <!-- <input class="btn btn-outline-info" type="submit" value="Zoek"> -->
-                        <button id="btnFetch" class="btn btn-outline-info mb-2" type="submit">Zoek</button>
-                      </div>
 
-                      <script type="text/javascript">
-                        $(document).ready(function(){
-                            $("#modal").trigger('click');
+                          <div>
+                            <label class="pb-0"><h6>Barcode:</h6></label>
+
+                          </div>
+                          <div>
+                            <input id="zxing-input" name="zxing-input" type="text" placeholder="Scan Barcode">
+                          </div>
+
+
+                        </div>
+                        <div>
+                          <!-- <input class="btn btn-outline-info" type="submit" value="Zoek"> -->
+                          <button id="btnFetch" class="btn btn-outline-info mb-2" type="submit">Zoek</button>
+                        </div>
+
+                        <script type="text/javascript">
+                          $(document).ready(function(){
+                              $("#modal").trigger('click');
+                          });
+                          </script>
+
+                        <script type="text/javascript">
+                          $(document).ready(function() {
+                            $("#btnFetch").click(function() {
+                              // disable button
+                              $(this).prop("disabled", true);
+                              // add spinner to button
+                              $(this).html(
+                                `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> w8 ff..`
+                              );
+                              $( "#zxingenv" ).submit();
+                            });
                         });
                         </script>
 
-                      <script type="text/javascript">
-                        $(document).ready(function() {
-                          $("#btnFetch").click(function() {
-                            // disable button
-                            $(this).prop("disabled", true);
-                            // add spinner to button
-                            $(this).html(
-                              `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> w8 ff..`
-                            );
-                            $( "#zxingenv" ).submit();
-                          });
-                      });
-                      </script>
 
-                </main>
 
-                <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest"></script>
-                <script type="text/javascript">
-                  window.addEventListener('load', function () {
-                    let selectedDeviceId;
-                    const codeReader = new ZXing.BrowserMultiFormatReader()
-                    console.log('ZXing code reader initialized')
-                        const test = document.getElementById("zxing-input");
+                  <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest"></script>
+                  <script type="text/javascript">
+                    window.addEventListener('load', function () {
+                      let selectedDeviceId;
+                      const codeReader = new ZXing.BrowserMultiFormatReader()
+                      console.log('ZXing code reader initialized')
+                          const test = document.getElementById("zxing-input");
 
-                        codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
-                          if (result) {
-                            console.log(result)
+                          codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
+                            if (result) {
+                              console.log(result)
 
-                            test.value = result.text
-                          }
-                          if (err && !(err instanceof ZXing.NotFoundException)) {
-                            console.error(err)
-                            document.getElementById('zxing-input').textContent = err
-                          }
+                              test.value = result.text
+                            }
+                            if (err && !(err instanceof ZXing.NotFoundException)) {
+                              console.error(err)
+                              document.getElementById('zxing-input').textContent = err
+                            }
+                          })
+                          console.log(`Started continous decode from camera with id ${selectedDeviceId}`)
+
+
+
+
                         })
-                        console.log(`Started continous decode from camera with id ${selectedDeviceId}`)
+                        .catch((err) => {
+                          console.error(err)
+                        })
 
+                  </script>
+              </div>
 
-
-
-                      })
-                      .catch((err) => {
-                        console.error(err)
-                      })
-
-                </script>
-            </div>
-
-    </fieldset>
-</form>
+      </fieldset>
+  </form>
+</main>
 {% endblock content %}
