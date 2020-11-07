@@ -48,7 +48,7 @@ def get_activity(barcode, token):
 
     response = requests.request("PUT", url, headers=headers, json=payload_dict)
     respons_dict = json.loads(response.text)
-    print(respons_dict)
+    # print(respons_dict)
 
     return respons_dict, response.status_code
 

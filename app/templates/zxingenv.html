@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
 <form method="POST" action="/zxingenv" id='zxingenv'>
-    {{ form.hidden_tag() }}
+
     <fieldset class="form-group">
         <div class="jumbotron">
           <legend class="border-bottom mb-2">Scan Order:</legend>
@@ -13,10 +13,7 @@
 
                         <video class="rounded" id="video" width="400" height="250"  alt="Max-width 100%"></video>
 
-                        <div>
-                          <a class="btn btn-outline-info mb-2" id="startButton">Start</a>
-                          <a class="btn btn-outline-info mb-2" id="resetButton" >Reset</a>
-                        </div>
+
                         <div>
                           <label class="pb-0"><h6>Barcode:</h6></label>
 
@@ -31,6 +28,12 @@
                         <!-- <input class="btn btn-outline-info" type="submit" value="Zoek"> -->
                         <button id="btnFetch" class="btn btn-outline-info mb-2" type="submit">Zoek</button>
                       </div>
+
+                      <script type="text/javascript">
+                        $(document).ready(function(){
+                            $("#modal").trigger('click');
+                        });
+                        </script>
 
                       <script type="text/javascript">
                         $(document).ready(function() {
@@ -55,26 +58,22 @@
                     const codeReader = new ZXing.BrowserMultiFormatReader()
                     console.log('ZXing code reader initialized')
                         const test = document.getElementById("zxing-input");
-                        document.getElementById('startButton').addEventListener('click', () => {
-                          codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
-                            if (result) {
-                              console.log(result)
 
-                              test.value = result.text
-                            }
-                            if (err && !(err instanceof ZXing.NotFoundException)) {
-                              console.error(err)
-                              document.getElementById('zxing-input').textContent = err
-                            }
-                          })
-                          console.log(`Started continous decode from camera with id ${selectedDeviceId}`)
-                        })
+                        codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
+                          if (result) {
+                            console.log(result)
 
-                        document.getElementById('resetButton').addEventListener('click', () => {
-                          codeReader.reset()
-                          document.getElementById('zxing-input').textContent = '';
-                          console.log('Reset.')
+                            test.value = result.text
+                          }
+                          if (err && !(err instanceof ZXing.NotFoundException)) {
+                            console.error(err)
+                            document.getElementById('zxing-input').textContent = err
+                          }
                         })
+                        console.log(`Started continous decode from camera with id ${selectedDeviceId}`)
+
+
+
 
                       })
                       .catch((err) => {

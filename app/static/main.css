@@ -88,5 +88,7 @@ a.article-title:hover {
   color: black;
 }
 
-
-
+video {
+  width: 100%;
+  height: auto;
+}
