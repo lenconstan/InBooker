@@ -2,6 +2,7 @@ from flask import Flask, session, render_template, url_for, request, redirect, f
 from config import Config
 import redis
 from datetime import datetime, date
+from functools import wraps
 
 from flask import session
 from flask_session import Session

@@ -61,3 +61,27 @@ def update_activity(activity_id, update_dict, token):
     response = requests.request("PUT", url, headers=headers, json=update_dict)
 
     return response.status_code
+
+def check_token(token):
+    """Check whether the token is still valid"""
+    url = "https://br8.freightlive.eu/api/v2/authenticate/check-token"
+    headers = {
+      'token': token
+    }
+    response = requests.request("GET", url, headers=headers).status_code
+    return response
+
+def servicelevel(package_lines, tag_identifier, servicelevels):
+    """Inputs:
+        list = list of the package lines in the form of dictionaries from the request response
+        tag_identifier = the key name for the tags in the request response
+        servicelevels = possible sercive levels
+        Output = the servicelevel.
+    """
+    if len(package_lines) > 0:
+        tag_list = [i[tag_identifier] for i in package_lines]
+        for i in servicelevels:
+            if i in tag_list:
+                return i
+    else:
+        return 'Geen servicelevel aangegeven'

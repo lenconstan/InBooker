@@ -1,11 +1,34 @@
 from app import app, Session, session, render_template, url_for, request, redirect, flash
 from app import db
+from app import wraps
 from app import datetime, date
 from app.forms import LoginForm, GetForm, OrderForm
 from flask import request
 import json
 import requests
-from app.apifunctions import get_activity, update_activity
+from app.apifunctions import get_activity, update_activity, check_token, servicelevel
+
+@app.before_request
+def before_request():
+    if not request.is_secure and app.env != "development":
+        url = request.url.replace("http://", "https://", 1)
+        code = 301
+        return redirect(url, code=code)
+
+def identificate(f):
+    @wraps(f)
+    def check_auth(*args, **kwargs):
+        if session['token']:
+            token_status_code = check_token(session['token'])
+            if token_status_code == 200:
+                return f(*args, **kwargs)
+            else:
+                return redirect(url_for('login', next=request.endpoint))
+                flash('Je bent niet of niet meer ingelogd, graag even inloggen!', 'danger')
+        else:
+            return redirect(url_for('login', next=request.endpoint))
+            flash('Je bent niet of niet meer ingelogd, graag even inloggen!', 'danger')
+    return check_auth
 
 @app.route('/test')
 def test():
@@ -15,12 +38,11 @@ def test():
     return session['reference']
 
 @app.route('/', methods=['GET', 'POST'])
+@app.route('/home', methods=['GET', 'POST'])
+@identificate
 def home():
     return render_template('home.html', title='InBooker')
 
-@app.route('/error', methods=['GET', 'POST'])
-def error():
-    return render_template('error.html', title='Oh ooh')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -35,7 +57,8 @@ def login():
             token = POST_authenticate.json()["token"]
             session['token'] = token
             session['initials'] = POST_authenticate.json()['user']['name_prefix']
-            return redirect(url_for('home'))
+            return redirect(request.args.get('next') or url_for('home'))
+            # return redirect(url_for('home'))
         flash('Inloggegevens niet bekend', 'danger')
     return render_template('login.html', title='Login', form=form)
 
@@ -49,7 +72,7 @@ def get_order():
             act = get_activity(raw_barcode, session['token'])
         except KeyError:
             flash('Je bent nog niet ingelogd, graag even inloggen!', 'danger')
-            return redirect(url_for('login'))
+            return redirect(url_for('login', next=request.endpoint))
         if act[1] == 200:
             if act[0]['items']:
                 db.set(session['token'], json.dumps(act[0]))
@@ -60,7 +83,7 @@ def get_order():
                 return redirect(url_for('get_order'))
         if act[1] == 403:
             flash('Je sessie is verlopen, graag opnieuw inloggen!', 'danger')
-            return redirect(url_for('login'))
+            return redirect(url_for('login', next=request.endpoint))
 
         else:
             flash('Je hebt nog geen barcode gescanned', 'danger')
@@ -76,7 +99,7 @@ def scan_order():
                 act = get_activity(request.form.get("scan-input"), session['token'])
             except KeyError:
                 flash('Je bent nog niet ingelogd, graag even inloggen!', 'danger')
-                return redirect(url_for('login'))
+                return redirect(url_for('login', next=request.endpoint))
             if act[1] == 200:
                 if act[0]['items']:
                     db.set(session['token'], json.dumps(act[0]))
@@ -87,7 +110,7 @@ def scan_order():
                     return redirect(url_for('scan_order'))
             if act[1] == 403:
                 flash('Je sessie is verlopen, graag opnieuw inloggen!', 'danger')
-                return redirect(url_for('login'))
+                return redirect(url_for('login', next=request.endpoint))
 
         else:
             flash('Je hebt nog geen barcode gescanned', 'danger')
@@ -103,7 +126,7 @@ def zxing():
                 act = get_activity(request.form.get("zxing-input"), session['token'])
             except KeyError:
                 flash('Je bent nog niet ingelogd, graag even inloggen!', 'danger')
-                return redirect(url_for('login'))
+                return redirect(url_for('login', next=request.endpoint))
             if act[1] == 200:
                 if act[0]['items']:
                     db.set(session['token'], json.dumps(act[0]))
@@ -114,7 +137,7 @@ def zxing():
                     return redirect(url_for('zxing'))
             if act[1] == 403:
                 flash('Je sessie is verlopen, graag opnieuw inloggen!', 'danger')
-                return redirect(url_for('login'))
+                return redirect(url_for('login', next=request.endpoint))
 
         else:
             flash('Je hebt nog geen barcode gescanned', 'danger')
@@ -130,7 +153,7 @@ def zxingenv():
                 act = get_activity(request.form.get("zxing-input"), session['token'])
             except KeyError:
                 flash('Je bent nog niet ingelogd, graag even inloggen!', 'danger')
-                return redirect(url_for('login'))
+                return redirect(url_for('login', next=request.endpoint))
             if act[1] == 200:
                 if act[0]['items']:
                     db.set(session['token'], json.dumps(act[0]))
@@ -141,7 +164,7 @@ def zxingenv():
                     return redirect(url_for('zxingenv'))
             if act[1] == 403:
                 flash('Je sessie is verlopen, graag opnieuw inloggen!', 'danger')
-                return redirect(url_for('login'))
+                return redirect(url_for('login', next=request.endpoint))
 
         else:
             flash('Je hebt nog geen barcode gescanned', 'danger')
@@ -158,9 +181,11 @@ def order(predes):
     session['assingment_party_name'] = order_dict['assignment']['party_name']
     session['name'] = order_dict['address']['full_name']
     session['activityid'] = order_dict['id']
+
     session['saywhen'] = order_dict['communication']['saywhen'] # if this variable is '1' Saywhen is activated, if '0' saywehen is not activated
     session['str_package_lines_descriptions'] = [m + 'x '+n for m,n in zip([i['nr_of_packages'].split('.')[0] for i in order_dict['package_lines']],[i['description'] for i in order_dict['package_lines']])]
     session['update_dict'] = {}
+    session['servicelevel'] = servicelevel(order_dict['tags'], "tag_type_name", ['Overalinhuis', 'Gebruiksklaar', 'Project'])
 
     #add current tags to dict that will be posted to retain current tags
     session['update_dict']['tags'] = order_dict['tags']

@@ -9,7 +9,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 class GetForm(FlaskForm):
-    raw_barcode = StringField('Barcode', validators=[DataRequired()])
+    raw_barcode = StringField('Barcode', validators=[DataRequired()], render_kw={'autofocus': True})
     submit = SubmitField('Zoek')
 
 class OrderForm(FlaskForm):
