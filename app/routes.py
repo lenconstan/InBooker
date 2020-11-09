@@ -18,17 +18,29 @@ def before_request():
 def identificate(f):
     @wraps(f)
     def check_auth(*args, **kwargs):
-        if session['token']:
-            token_status_code = check_token(session['token'])
+        try:
+            if session['token']:
+                token_status_code = check_token(session['token'])
             if token_status_code == 200:
                 return f(*args, **kwargs)
             else:
                 return redirect(url_for('login', next=request.endpoint))
                 flash('Je bent niet of niet meer ingelogd, graag even inloggen!', 'danger')
-        else:
+
+        except KeyError:
             return redirect(url_for('login', next=request.endpoint))
             flash('Je bent niet of niet meer ingelogd, graag even inloggen!', 'danger')
     return check_auth
+
+@app.errorhandler(404)
+def page_not_found(e):
+    # note that we set the 404 status explicitly
+    return render_template('error.html', error=e), 404
+
+@app.errorhandler(500)
+def page_not_found(e):
+    # note that we set the 500 status explicitly
+    return render_template('error.html', error=e), 500
 
 @app.route('/test')
 def test():
@@ -39,7 +51,6 @@ def test():
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/home', methods=['GET', 'POST'])
-@identificate
 def home():
     return render_template('home.html', title='InBooker')
 
