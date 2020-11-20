@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h5>Routedata voor uitgevoerde routes van {{ date_from }} tot en met {{ date_to }}</h5>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">NR</th>
+          <th scope="col">Naam</th>
+          <th scope="col">Stops</th>
+          <th scope="col">Chauffeur</th>
+          <th scope="col">Km</th>
+          <th scope="col">Stoptijd</th>
+          <th scope="col">Geplande tijd</th>
+          <th scope="col">Daadwerkelijke tijd</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% if query %}
+        {% for i in query %}
+          <tr>
+            <th scope="row">{{ i.id }}</th>
+            <td>{{ i.nr }}</td>
+            <td>{{ i.name }}</td>
+            <td>{{ i.nr_of_stops }}</td>
+            <td>{{ i.driver_full_name }}</td>
+            <td>{{ i.planned_driving_distance }}</td>
+            <td>{{ i.planned_activity_duration }}</td>
+            <td>{{ i.planned_total_duration }}</td>
+            <td>{{ i.actual_duration }}</td>
+          </tr>
+        {% endfor %}
+      {% endif %}
+      </tbody>
+</table>
+{% endblock content %}

@@ -6,7 +6,9 @@ from app.forms import LoginForm, GetForm, OrderForm
 from flask import request
 import json
 import requests
-from app.apifunctions import get_activity, update_activity, check_token, servicelevel
+from app.apifunctions import get_activity, update_activity, check_token, servicelevel, get_route_data
+import time
+import dateutil.parser as dparser
 
 @app.before_request
 def before_request():
@@ -42,12 +44,80 @@ def page_not_found(e):
     # note that we set the 500 status explicitly
     return render_template('error.html', error=e), 500
 
+
+@app.route('/routes', methods=['GET', 'POST'])
+# @identificate
+def routes():
+    #1 - Get the value from the datepicker
+    date_from = request.form.get('date_from') or None
+    date_to = request.form.get('date_to') or None
+
+    #prepare the from and to dates for the api-call
+
+    if request.method == 'POST':
+        date_from_req = None
+        date_to_req = None
+        if date_from is None:
+            flash('Je hebt geen datum of databereik ingevluld', 'danger')
+            return redirect(url_for('routes'))
+        else:
+            date_from_req = date_from + 'T00:00:00.000Z'
+            if date_to is not None:
+                date_to_req = date_to + 'T23:59:59.999Z'
+            if date_from is not None and date_to is None:
+                date_to_req = date_from + 'T23:59:59.999Z'
+
+        #Forward the datetime data to the query page
+        return redirect(url_for('routes_query', date_from=date_from_req, date_to=date_to_req))
+
+
+
+    return render_template('routes.html', title='RouteDash')
+
+
+@app.route('/routes_query', methods=['GET'])
+@identificate
+def routes_query():
+
+    def delta(t1, t2):
+        """Provides the timedelta between two datetime values in minutes"""
+        try:
+            d1 = dparser.parse(t1, fuzzy=True)
+            d2 = dparser.parse(t2, fuzzy=True)
+            factors = (60, 1, 1/60)
+            duration = str((d2 - d1))
+            duration_minutes = sum(i*j for i, j in zip(map(int, duration.split(':')), factors))
+            return str(round(duration_minutes))
+        except:
+            return 'N/A'
+
+
+    # obtain datepicker input dates
+    start = request.args['date_from'] or None
+    stop = request.args['date_to'] or None
+    # format selected datetimes for view
+    start2 = start.split('T')[0]
+    stop2 = stop.split('T')[0]
+    route_data = get_route_data(start, stop, session['token'])
+    # print(route_data)
+    routes_list = []
+    if route_data[1] == 200 and route_data[0]['items']:
+        for i in route_data[0]['items']:
+            routes_list.append({'id': i['id'], 'nr': i['nr'], 'name': i['name'], 'nr_of_stops': i['nr_of_stops'],
+            'driver_full_name': i['driver']['full_name'], 'planned_driving_distance': str(round(int(i['planned_driving_distance'])/1000)),
+             'planned_activity_duration': i['planned_activity_duration'],
+             'planned_total_duration': i['planned_total_duration'], 'actual_duration': delta(i['executed_date_time_from'], i['executed_date_time_to']) })
+
+    return render_template('routes_query.html', title='Query results', date_from=start2, date_to=stop2, query=routes_list)
+
+
 @app.route('/test')
 def test():
     disabled = 'disabled'
     order_dict = json.loads(db.get(session['token']))['items'][0]
     session['reference'] = order_dict['reference']
     return session['reference']
+
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/home', methods=['GET', 'POST'])
