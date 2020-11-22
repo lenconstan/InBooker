@@ -71,7 +71,7 @@ def check_token(token):
     response = requests.request("GET", url, headers=headers).status_code
     return response
 
-def get_route_data(start, stop, token):
+def get_route_data(start, stop, offset, token):
     url = "https://br8.freightlive.eu/api/v2/route"
 
     payload= data ="{\n    \"options\": {\n        \"include_address\": \"true\",\n        \"include_address_object\": \"true\",\n        \"include_route_status\": \"true\",\n        \"include_route_tags\": \"true\",\n        \"include_tag_names\": \"true\",\n        \"include_driver\": \"true\",\n        \"include_driver_links\": \"true\",\n        \"include_car\": \"true\",\n        \"include_car_links\": \"true\",\n        \"include_vehicle\": \"true\",\n        \"include_vehicle_links\": \"true\",\n        \"include_trailer\": \"true\",\n        \"include_trailer_links\": \"true\",\n        \"include_driver_info\": \"true\",\n        \"include_equipment_info_car\": \"true\",\n        \"include_equipment\": \"true\",\n        \"include_gps_locations\": \"true\",\n        \"include_pause\": \"true\",\n        \"include_activity_ids\": \"true\",\n        \"include_latest_position\": \"true\",\n        \"include_zones\": \"true\",\n        \"include_zone_names\": \"true\",\n        \"include_notes\": \"true\"\n    },\n    \"filters\": {\n        \n        \"date_time_from\": \"2020-10-18T00:00:00.000Z\",\n        \"date_time_to\": \"2020-10-18T23:59:59.999Z\"\n        \n    },\n    \"limit\": \"1000\",\n    \"as_list\": \"true\"\n}"
@@ -79,6 +79,7 @@ def get_route_data(start, stop, token):
     payload_dict = json.loads(data)
     payload_dict['filters']['date_time_from'] = start
     payload_dict['filters']['date_time_to'] = stop
+    payload_dict['offset'] = offset
 
     headers = {
       'token': token

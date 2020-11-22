@@ -108,6 +108,19 @@ def routes_query():
                 return 'NA'
         return dct
 
+    def list_to_string(s):
+        try:
+            str1 = " "
+            return (str1.join(s))
+        except (KeyError, TypeError) as e:
+            return 'NA'
+
+    def split_it(it, split_char, split_index):
+        try:
+            if type(it) is str:
+                return it.split(split_char)[split_index]
+        except (KeyError, TypeError) as e:
+            return 'NA'
 
 
 
@@ -118,7 +131,8 @@ def routes_query():
     # format selected datetimes for view
     start2 = start.split('T')[0]
     stop2 = stop.split('T')[0]
-    route_data = get_route_data(start, stop, session['token'])
+    route_data = get_route_data(start, stop, 0, session['token'])
+
     # print(route_data)
     routes_list = []
     if route_data[1] == 200 and route_data[0]['items']:
@@ -126,8 +140,8 @@ def routes_query():
             routes_list.append({'id': safeget(i, 'id'), 'nr': safeget(i,'nr'), 'name': safeget(i, 'name'), 'nr_of_stops': safeget(i,'nr_of_stops'),
             'driver_full_name': safeget(i, 'driver', 'full_name'), 'trailer' :safeget(i, 'trailer', 'name'), 'car': safeget(i, 'car', 'name'), 'planned_driving_distance': try_it(str(round(int(i['planned_driving_distance'])/1000))),
              'planned_activity_duration': safeget(i, 'planned_activity_duration'),
-             'planned_total_duration': safeget(i, 'planned_total_duration'), 'actual_duration': delta(safeget(i, 'executed_date_time_from'), safeget(i, 'executed_date_time_to')), 'date': safeget(i, 'executed_date_time_to').split(' ')[0] })
-
+             'planned_total_duration': safeget(i, 'planned_total_duration'), 'actual_duration': delta(safeget(i, 'executed_date_time_from'), safeget(i, 'executed_date_time_to')), 'date': split_it(safeget(i, 'executed_date_time_to'), ' ', 0), 'zones': list_to_string(safeget(i, 'zone_names')) })
+        routes_list.sort(key = lambda x:x['date'])
     return render_template('routes_query.html', title='Query results', date_from=start2, date_to=stop2, query=routes_list)
 
 

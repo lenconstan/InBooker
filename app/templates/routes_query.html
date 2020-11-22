@@ -16,6 +16,7 @@
           <th scope="col">Stoptijd</th>
           <th scope="col">Geplande tijd</th>
           <th scope="col">Daadwerkelijke tijd</th>
+          <th scope="col">Zone(s)</th>
           <th scope="col">Datum</th>
         </tr>
       </thead>
@@ -34,6 +35,7 @@
             <td>{{ i.planned_activity_duration }}</td>
             <td>{{ i.planned_total_duration }}</td>
             <td>{{ i.actual_duration }}</td>
+            <td>{{ i.zones }}</td>
             <td>{{ i.date }}</td>
           </tr>
         {% endfor %}
