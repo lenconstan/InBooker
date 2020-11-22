@@ -122,6 +122,19 @@ def routes_query():
         except (KeyError, TypeError) as e:
             return 'NA'
 
+    def sort_by_date(list_obj):
+        try:
+            list_obj.sort(key = lambda x:x['date'])
+        except (KeyError, TypeError) as e:
+            pass
+
+    # def handle_pagination(obj, page_limit, append_to, to_append):
+    #     while len(obj) == page_limit:
+    #         offset = 100
+    #         temp_data = get_route_data(start, stop, offset, session['token'])
+    #         append_to.append(to_append)
+
+
 
 
 
@@ -141,7 +154,7 @@ def routes_query():
             'driver_full_name': safeget(i, 'driver', 'full_name'), 'trailer' :safeget(i, 'trailer', 'name'), 'car': safeget(i, 'car', 'name'), 'planned_driving_distance': try_it(str(round(int(i['planned_driving_distance'])/1000))),
              'planned_activity_duration': safeget(i, 'planned_activity_duration'),
              'planned_total_duration': safeget(i, 'planned_total_duration'), 'actual_duration': delta(safeget(i, 'executed_date_time_from'), safeget(i, 'executed_date_time_to')), 'date': split_it(safeget(i, 'executed_date_time_to'), ' ', 0), 'zones': list_to_string(safeget(i, 'zone_names')) })
-        routes_list.sort(key = lambda x:x['date'])
+        sort_by_date(routes_list)
     return render_template('routes_query.html', title='Query results', date_from=start2, date_to=stop2, query=routes_list)
 
 
