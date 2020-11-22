@@ -2,3 +2,4 @@ venv
 *.py~
 env
 env.py
+.env

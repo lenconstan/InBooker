@@ -23,8 +23,8 @@ def identificate(f):
         try:
             if session['token']:
                 token_status_code = check_token(session['token'])
-            if token_status_code == 200:
-                return f(*args, **kwargs)
+                if token_status_code == 200:
+                    return f(*args, **kwargs)
             else:
                 return redirect(url_for('login', next=request.endpoint))
                 flash('Je bent niet of niet meer ingelogd, graag even inloggen!', 'danger')
@@ -89,7 +89,27 @@ def routes_query():
             duration_minutes = sum(i*j for i, j in zip(map(int, duration.split(':')), factors))
             return str(round(duration_minutes))
         except:
-            return 'N/A'
+            return 'NA'
+
+    def try_it(input_key):
+        try:
+            if input_key:
+                return input_key
+            else:
+                return 'NA'
+        except:
+            return 'NA'
+
+    def safeget(dct, *keys):
+        for key in keys:
+            try:
+                dct = dct[key]
+            except (KeyError, TypeError) as e:
+                return 'NA'
+        return dct
+
+
+
 
 
     # obtain datepicker input dates
@@ -103,10 +123,10 @@ def routes_query():
     routes_list = []
     if route_data[1] == 200 and route_data[0]['items']:
         for i in route_data[0]['items']:
-            routes_list.append({'id': i['id'], 'nr': i['nr'], 'name': i['name'], 'nr_of_stops': i['nr_of_stops'],
-            'driver_full_name': i['driver']['full_name'], 'planned_driving_distance': str(round(int(i['planned_driving_distance'])/1000)),
-             'planned_activity_duration': i['planned_activity_duration'],
-             'planned_total_duration': i['planned_total_duration'], 'actual_duration': delta(i['executed_date_time_from'], i['executed_date_time_to']) })
+            routes_list.append({'id': safeget(i, 'id'), 'nr': safeget(i,'nr'), 'name': safeget(i, 'name'), 'nr_of_stops': safeget(i,'nr_of_stops'),
+            'driver_full_name': safeget(i, 'driver', 'full_name'), 'trailer' :safeget(i, 'trailer', 'name'), 'car': safeget(i, 'car', 'name'), 'planned_driving_distance': try_it(str(round(int(i['planned_driving_distance'])/1000))),
+             'planned_activity_duration': safeget(i, 'planned_activity_duration'),
+             'planned_total_duration': safeget(i, 'planned_total_duration'), 'actual_duration': delta(safeget(i, 'executed_date_time_from'), safeget(i, 'executed_date_time_to')), 'date': safeget(i, 'executed_date_time_to').split(' ')[0] })
 
     return render_template('routes_query.html', title='Query results', date_from=start2, date_to=stop2, query=routes_list)
 
