@@ -23,8 +23,8 @@ def identificate(f):
         try:
             if session['token']:
                 token_status_code = check_token(session['token'])
-                if token_status_code == 200:
-                    return f(*args, **kwargs)
+            if token_status_code == 200:
+                return f(*args, **kwargs)
             else:
                 return redirect(url_for('login', next=request.endpoint))
                 flash('Je bent niet of niet meer ingelogd, graag even inloggen!', 'danger')
@@ -46,7 +46,7 @@ def page_not_found(e):
 
 
 @app.route('/routes', methods=['GET', 'POST'])
-# @identificate
+@identificate
 def routes():
     #1 - Get the value from the datepicker
     date_from = request.form.get('date_from') or None
@@ -75,8 +75,8 @@ def routes():
     return render_template('routes.html', title='RouteDash')
 
 
-@app.route('/routes_query', methods=['GET'])
-@identificate
+@app.route('/routes_query', methods=['GET', 'POST'])
+# @identificate
 def routes_query():
 
     def delta(t1, t2):
