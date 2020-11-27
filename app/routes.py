@@ -9,6 +9,7 @@ import requests
 from app.apifunctions import get_activity, update_activity, check_token, servicelevel, get_route_data
 import time
 import dateutil.parser as dparser
+from app import mul
 
 @app.before_request
 def before_request():
@@ -80,7 +81,8 @@ def routes():
 def routes_query():
 
     costs = {'1mans': (34/60), '2mans': (51/60)}
-    stop_rev = 64.5
+    stop_rev = 40.00
+    rev_min = 1
 
     def delta(t1, t2):
         """Provides the timedelta between two datetime values in minutes"""
@@ -135,9 +137,9 @@ def routes_query():
         if list_obj:
             return tag in list_obj
         else:
-            return Fasle
+            return False
 
-    def rev_exp(bool, costs_oneman, costs_twomen, stops, stop_rev, duration):
+    def rev_exp(bool, costs_oneman, costs_twomen, stops, stop_rev, duration, rev_min, act_dur):
         exp_costs = 0
         #Expenses
         if bool is True:
@@ -145,11 +147,24 @@ def routes_query():
         else:
             exp_costs = round(costs_twomen * int(duration), 0)
         #Revenue
-        rev = int(stops) * stop_rev
+        rev = round(int(stops) * stop_rev + int(act_dur) * rev_min, 0)
         #Margin
-        margin = round((rev - exp_costs) / rev, 2)
+        try:
+            margin = round((rev - exp_costs) / rev, 1)
+        except ZeroDivisionError:
+            margin = 0
 
         return exp_costs, rev, margin
+
+    def totals(list, object_to_sum):
+        try:
+            total = 0
+            for i in list:
+                total += float(i[object_to_sum])
+
+            return total
+        except TypeError:
+            return 'NA'
 
 
     # def handle_pagination(obj, page_limit, append_to, to_append):
@@ -170,20 +185,25 @@ def routes_query():
     routes_list = []
     if route_data[1] == 200 and route_data[0]['items']:
         for i in route_data[0]['items']:
-            print(get_tag(safeget(i, 'tag_names'), '2mans'))
             routes_list.append({'id': safeget(i, 'id'), 'nr': safeget(i,'nr'), 'name': safeget(i, 'name'), 'nr_of_stops': safeget(i,'nr_of_stops'),
             'driver_full_name': safeget(i, 'driver', 'full_name'), 'trailer' :safeget(i, 'trailer', 'name'), 'car': safeget(i, 'car', 'name'), 'planned_driving_distance': try_it(str(round(int(i['planned_driving_distance'])/1000))),
              'planned_activity_duration': safeget(i, 'planned_activity_duration'),
              'planned_total_duration': safeget(i, 'planned_total_duration'), 'actual_duration': delta(safeget(i, 'executed_date_time_from'), safeget(i, 'executed_date_time_to')), 'date': split_it(safeget(i, 'planned_date_time_from'), ' ', 0), 'zones': list_to_string(safeget(i, 'zone_names')), 'two_man': get_tag(safeget(i, 'tag_names'), '2mans'),
-             'exp_costs': rev_exp(get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), 64.5, safeget(i, 'planned_total_duration'))[0],
-             'exp_rev': rev_exp(get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), 64.5, safeget(i, 'planned_total_duration'))[1],
-             'exp_margin': rev_exp(get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), 64.5, safeget(i, 'planned_total_duration'))[2]
+             'exp_costs': rev_exp(get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), stop_rev, safeget(i, 'planned_total_duration'),rev_min, safeget(i, 'planned_activity_duration'))[0],
+             'exp_rev': rev_exp(get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), stop_rev, safeget(i, 'planned_total_duration'),rev_min, safeget(i, 'planned_activity_duration'))[1],
+             'exp_margin': rev_exp(get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), stop_rev, safeget(i, 'planned_total_duration'),rev_min, safeget(i, 'planned_activity_duration'))[2] *100
 
               })
 
 
+
         sort_by_date(routes_list)
-    return render_template('routes_query.html', title='Query results', date_from=start2, date_to=stop2, query=routes_list)
+
+
+        exp_totals = {'sum_exp_costs': totals(routes_list, 'exp_costs'), 'sum_exp_rev': totals(routes_list, 'exp_rev')}
+        exp_tot_mar = {'sum_exp_margin': round(((exp_totals['sum_exp_rev']-exp_totals['sum_exp_costs'])/exp_totals['sum_exp_costs'])*100, 1)}
+
+    return render_template('routes_query.html', title='Query results', date_from=start2, date_to=stop2, query=routes_list, totals=exp_totals, margin=exp_tot_mar)
 
 
 @app.route('/test')

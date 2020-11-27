@@ -3,6 +3,7 @@ from config import Config
 import redis
 from datetime import datetime, date
 from functools import wraps
+from operator import mul
 
 
 from flask import session
