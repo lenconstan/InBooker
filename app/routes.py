@@ -79,6 +79,9 @@ def routes():
 # @identificate
 def routes_query():
 
+    costs = {'1mans': (34/60), '2mans': (51/60)}
+    stop_rev = 64.5
+
     def delta(t1, t2):
         """Provides the timedelta between two datetime values in minutes"""
         try:
@@ -128,15 +131,32 @@ def routes_query():
         except (KeyError, TypeError) as e:
             pass
 
+    def get_tag(list_obj, tag):
+        if list_obj:
+            return tag in list_obj
+        else:
+            return Fasle
+
+    def rev_exp(bool, costs_oneman, costs_twomen, stops, stop_rev, duration):
+        exp_costs = 0
+        #Expenses
+        if bool is True:
+            exp_costs = round(costs_twomen * int(duration), 0)
+        else:
+            exp_costs = round(costs_twomen * int(duration), 0)
+        #Revenue
+        rev = int(stops) * stop_rev
+        #Margin
+        margin = round((rev - exp_costs) / rev, 2)
+
+        return exp_costs, rev, margin
+
+
     # def handle_pagination(obj, page_limit, append_to, to_append):
     #     while len(obj) == page_limit:
     #         offset = 100
     #         temp_data = get_route_data(start, stop, offset, session['token'])
     #         append_to.append(to_append)
-
-
-
-
 
     # obtain datepicker input dates
     start = request.args['date_from'] or None
@@ -150,10 +170,18 @@ def routes_query():
     routes_list = []
     if route_data[1] == 200 and route_data[0]['items']:
         for i in route_data[0]['items']:
+            print(get_tag(safeget(i, 'tag_names'), '2mans'))
             routes_list.append({'id': safeget(i, 'id'), 'nr': safeget(i,'nr'), 'name': safeget(i, 'name'), 'nr_of_stops': safeget(i,'nr_of_stops'),
             'driver_full_name': safeget(i, 'driver', 'full_name'), 'trailer' :safeget(i, 'trailer', 'name'), 'car': safeget(i, 'car', 'name'), 'planned_driving_distance': try_it(str(round(int(i['planned_driving_distance'])/1000))),
              'planned_activity_duration': safeget(i, 'planned_activity_duration'),
-             'planned_total_duration': safeget(i, 'planned_total_duration'), 'actual_duration': delta(safeget(i, 'executed_date_time_from'), safeget(i, 'executed_date_time_to')), 'date': split_it(safeget(i, 'executed_date_time_to'), ' ', 0), 'zones': list_to_string(safeget(i, 'zone_names')) })
+             'planned_total_duration': safeget(i, 'planned_total_duration'), 'actual_duration': delta(safeget(i, 'executed_date_time_from'), safeget(i, 'executed_date_time_to')), 'date': split_it(safeget(i, 'planned_date_time_from'), ' ', 0), 'zones': list_to_string(safeget(i, 'zone_names')), 'two_man': get_tag(safeget(i, 'tag_names'), '2mans'),
+             'exp_costs': rev_exp(get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), 64.5, safeget(i, 'planned_total_duration'))[0],
+             'exp_rev': rev_exp(get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), 64.5, safeget(i, 'planned_total_duration'))[1],
+             'exp_margin': rev_exp(get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), 64.5, safeget(i, 'planned_total_duration'))[2]
+
+              })
+
+
         sort_by_date(routes_list)
     return render_template('routes_query.html', title='Query results', date_from=start2, date_to=stop2, query=routes_list)
 
