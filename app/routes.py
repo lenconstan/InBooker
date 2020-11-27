@@ -143,14 +143,14 @@ def routes_query():
         exp_costs = 0
         #Expenses
         if bool is True:
-            exp_costs = round(costs_twomen * int(duration), 0)
+            exp_costs = round(costs_twomen * float(duration), 2)
         else:
-            exp_costs = round(costs_twomen * int(duration), 0)
+            exp_costs = round(costs_twomen * float(duration), 2)
         #Revenue
-        rev = round(int(stops) * stop_rev + int(act_dur) * rev_min, 0)
+        rev = round(float(stops) * stop_rev + float(act_dur) * rev_min, 2)
         #Margin
         try:
-            margin = round((rev - exp_costs) / rev, 1)
+            margin = round((rev - exp_costs) / rev, 2)
         except ZeroDivisionError:
             margin = 0
 
@@ -162,7 +162,7 @@ def routes_query():
             for i in list:
                 total += float(i[object_to_sum])
 
-            return total
+            return round(total, 2)
         except TypeError:
             return 'NA'
 
@@ -186,7 +186,7 @@ def routes_query():
     if route_data[1] == 200 and route_data[0]['items']:
         for i in route_data[0]['items']:
             routes_list.append({'id': safeget(i, 'id'), 'nr': safeget(i,'nr'), 'name': safeget(i, 'name'), 'nr_of_stops': safeget(i,'nr_of_stops'),
-            'driver_full_name': safeget(i, 'driver', 'full_name'), 'trailer' :safeget(i, 'trailer', 'name'), 'car': safeget(i, 'car', 'name'), 'planned_driving_distance': try_it(str(round(int(i['planned_driving_distance'])/1000))),
+            'driver_full_name': safeget(i, 'driver', 'full_name'), 'trailer' :safeget(i, 'trailer', 'name'), 'car': safeget(i, 'car', 'name'), 'planned_driving_distance': try_it(str(round(int(i['planned_driving_distance'])/1000, 1))),
              'planned_activity_duration': safeget(i, 'planned_activity_duration'),
              'planned_total_duration': safeget(i, 'planned_total_duration'), 'actual_duration': delta(safeget(i, 'executed_date_time_from'), safeget(i, 'executed_date_time_to')), 'date': split_it(safeget(i, 'planned_date_time_from'), ' ', 0), 'zones': list_to_string(safeget(i, 'zone_names')), 'two_man': get_tag(safeget(i, 'tag_names'), '2mans'),
              'exp_costs': rev_exp(get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), stop_rev, safeget(i, 'planned_total_duration'),rev_min, safeget(i, 'planned_activity_duration'))[0],
@@ -201,7 +201,7 @@ def routes_query():
 
 
         exp_totals = {'sum_exp_costs': totals(routes_list, 'exp_costs'), 'sum_exp_rev': totals(routes_list, 'exp_rev')}
-        exp_tot_mar = {'sum_exp_margin': round(((exp_totals['sum_exp_rev']-exp_totals['sum_exp_costs'])/exp_totals['sum_exp_costs'])*100, 1)}
+        exp_tot_mar = {'sum_exp_margin': round(((exp_totals['sum_exp_rev']-exp_totals['sum_exp_costs'])/exp_totals['sum_exp_rev'])*100, 3)}
 
     return render_template('routes_query.html', title='Query results', date_from=start2, date_to=stop2, query=routes_list, totals=exp_totals, margin=exp_tot_mar)
 
