@@ -2,6 +2,7 @@ from app import app, Session, session, render_template, url_for, request, redire
 from app import db
 from app import wraps
 from app import datetime, date
+from app import Costs
 from app.forms import LoginForm, GetForm, OrderForm
 from flask import request
 import json
@@ -80,9 +81,9 @@ def routes():
 # @identificate
 def routes_query():
 
-    costs = {'1mans': (34/60), '2mans': (51/60)}
-    stop_rev = 40.00
-    rev_min = 1
+    costs = {'1mans': float(Costs.COSTS_ONE), '2mans': float(Costs.COSTS_TWO)}
+    stop_rev = float(Costs.STOP_REV)
+    rev_min = float(Costs.MIN_REV)
 
     def delta(t1, t2):
         """Provides the timedelta between two datetime values in minutes"""
