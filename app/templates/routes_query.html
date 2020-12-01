@@ -32,7 +32,8 @@
             <!-- <th scope="col">Bijrijder</th> -->
             <!-- <th scope="col">Voertuig</th> -->
             <th scope="col">Km</th>
-            <th scope="col">Stoptijd</th>
+            <!-- <th scope="col">Stoptijd</th> -->
+            <th scope="col">Factureerbare stoptijd</th>
             <th scope="col">Geplande tijd</th>
             <th scope="col">Daadwerkelijke tijd</th>
             <th scope="col">Geschatte kosten</th>
@@ -55,7 +56,8 @@
               <!-- <td>{{ i.trailer }}</td> -->
               <!-- <td>{{ i.car }}</td> -->
               <td>{{ i.planned_driving_distance }}</td>
-              <td>{{ i.planned_activity_duration }}</td>
+              <!-- <td>{{ i.planned_activity_duration }}</td> -->
+              <td>{{ i.billable_minutes }}</td>
               <td>{{ i.planned_total_duration }}</td>
               <td>{{ i.actual_duration }}</td>
               <td>€{{ i.exp_costs }}</td>

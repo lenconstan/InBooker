@@ -114,6 +114,14 @@ def routes_query():
                 return 'NA'
         return dct
 
+    def def_two_men(val_a, val_b, na_val):
+        if val_a != na_val and val_b != na_val:
+            return True
+        elif val_b != na_val:
+            return True
+        else:
+            return False
+
     def list_to_string(s):
         try:
             str1 = " "
@@ -140,15 +148,28 @@ def routes_query():
         else:
             return False
 
-    def rev_exp(bool, costs_oneman, costs_twomen, stops, stop_rev, duration, rev_min, act_dur):
+
+
+    def rev_exp(driver, trailer, trailer_val, bool, costs_oneman, costs_twomen, stops, stop_rev, duration, rev_min, act_dur, loading_time, unloading_time):
         exp_costs = 0
         #Expenses
-        if bool is True:
+
+        #Determine 2mans or 1mans and calculate costs with according cost figures
+        if driver == trailer_val and trailer == trailer_val:
+            exp_costs = round(costs_twomen * float(duration), 2)
+            print('2mans', costs_twomen, duration)
+        elif trailer != trailer_val:
             exp_costs = round(costs_twomen * float(duration), 2)
         else:
-            exp_costs = round(costs_twomen * float(duration), 2)
+            exp_costs = round(costs_oneman * float(duration), 2)
+
+        # if bool is True:
+        #     exp_costs = round(costs_twomen * (float(duration) - float(loading_time) - float(unloading_time)), 2)
+        # else:
+        #     exp_costs = round(costs_oneman * (float(duration) - float(loading_time) - float(unloading_time)), 2)
         #Revenue
-        rev = round(float(stops) * stop_rev + float(act_dur) * rev_min, 2)
+        rev = round(float(stops) * stop_rev + (float(act_dur) - float(loading_time) - float(unloading_time)) * rev_min, 2)
+        # rev = round(float(stops) * stop_rev + float(act_dur) * rev_min, 2)
         #Margin
         try:
             margin = round((rev - exp_costs) / rev, 2)
@@ -168,12 +189,6 @@ def routes_query():
             return 'NA'
 
 
-    # def handle_pagination(obj, page_limit, append_to, to_append):
-    #     while len(obj) == page_limit:
-    #         offset = 100
-    #         temp_data = get_route_data(start, stop, offset, session['token'])
-    #         append_to.append(to_append)
-
     # obtain datepicker input dates
     start = request.args['date_from'] or None
     stop = request.args['date_to'] or None
@@ -188,11 +203,12 @@ def routes_query():
         for i in route_data[0]['items']:
             routes_list.append({'id': safeget(i, 'id'), 'nr': safeget(i,'nr'), 'name': safeget(i, 'name'), 'nr_of_stops': safeget(i,'nr_of_stops'),
             'driver_full_name': safeget(i, 'driver', 'full_name'), 'trailer' :safeget(i, 'trailer', 'name'), 'car': safeget(i, 'car', 'name'), 'planned_driving_distance': try_it(str(round(int(i['planned_driving_distance'])/1000, 1))),
-             'planned_activity_duration': safeget(i, 'planned_activity_duration'),
-             'planned_total_duration': safeget(i, 'planned_total_duration'), 'actual_duration': delta(safeget(i, 'executed_date_time_from'), safeget(i, 'executed_date_time_to')), 'date': split_it(safeget(i, 'planned_date_time_from'), ' ', 0), 'zones': list_to_string(safeget(i, 'zone_names')), 'two_man': get_tag(safeget(i, 'tag_names'), '2mans'),
-             'exp_costs': rev_exp(get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), stop_rev, safeget(i, 'planned_total_duration'),rev_min, safeget(i, 'planned_activity_duration'))[0],
-             'exp_rev': rev_exp(get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), stop_rev, safeget(i, 'planned_total_duration'),rev_min, safeget(i, 'planned_activity_duration'))[1],
-             'exp_margin': rev_exp(get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), stop_rev, safeget(i, 'planned_total_duration'),rev_min, safeget(i, 'planned_activity_duration'))[2] *100
+             'planned_activity_duration': safeget(i, 'planned_activity_duration'), 'billable_minutes': (float(safeget(i, 'planned_activity_duration')) - float(safeget(i, 'planned_start_duration')) - float(safeget(i, 'planned_end_duration'))),
+             'planned_total_duration': safeget(i, 'planned_total_duration'), 'actual_duration': delta(safeget(i, 'executed_date_time_from'), safeget(i, 'executed_date_time_to')), 'date': split_it(safeget(i, 'planned_date_time_from'), ' ', 0), 'zones': list_to_string(safeget(i, 'zone_names')), 'two_man': def_two_men(safeget(i, 'driver', 'full_name'), safeget(i, 'trailer', 'name'), 'NA'),
+             'planned_start_duration' : safeget(i, 'planned_start_duration'), 'planned_end_duration': safeget(i, 'planned_end_duration'),
+             'exp_costs': rev_exp(safeget(i, 'driver', 'full_name'), safeget(i, 'trailer', 'name'), 'NA', get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), stop_rev, safeget(i, 'planned_total_duration'),rev_min, safeget(i, 'planned_activity_duration'), safeget(i, 'planned_start_duration'), safeget(i, 'planned_end_duration'))[0],
+             'exp_rev': rev_exp(safeget(i, 'driver', 'full_name'), safeget(i, 'trailer', 'name'), 'NA', get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), stop_rev, safeget(i, 'planned_total_duration'),rev_min, safeget(i, 'planned_activity_duration'), safeget(i, 'planned_start_duration'), safeget(i, 'planned_end_duration'))[1],
+             'exp_margin': rev_exp(safeget(i, 'driver', 'full_name'), safeget(i, 'trailer', 'name'), 'NA', get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), stop_rev, safeget(i, 'planned_total_duration'),rev_min, safeget(i, 'planned_activity_duration'), safeget(i, 'planned_start_duration'), safeget(i, 'planned_end_duration'))[2] *100
 
               })
 

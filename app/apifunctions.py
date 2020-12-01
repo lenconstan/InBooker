@@ -88,10 +88,7 @@ def get_route_data(start, stop, offset, token):
     response = requests.request("PUT", url, headers=headers, json=payload_dict)
     respons_dict = json.loads(response.text)
 
-
     return respons_dict, response.status_code
-
-
 
 
 
