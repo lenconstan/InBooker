@@ -46,6 +46,8 @@ def page_not_found(e):
     # note that we set the 500 status explicitly
     return render_template('error.html', error=e), 500
 
+# @app.route('/picqer/stockchanges', methods=['GET', 'POST'])
+# def stockchanges():
 
 @app.route('/routes', methods=['GET', 'POST'])
 @identificate
