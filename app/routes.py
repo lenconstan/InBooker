@@ -119,7 +119,7 @@ def routes_query():
     def def_two_men(val_a, val_b, na_val):
         if val_a == na_val and val_b == na_val:
             return True
-        elif al_a != na_val and val_b != na_val:
+        elif val_a != na_val and val_b != na_val:
             return True
         elif val_b != na_val:
             return True
