@@ -161,7 +161,6 @@ def routes_query():
         #Determine 2mans or 1mans and calculate costs with according cost figures
         if driver == trailer_val and trailer == trailer_val:
             exp_costs = round(costs_twomen * float(duration), 2)
-            print('2mans', costs_twomen, duration)
         elif trailer != trailer_val:
             exp_costs = round(costs_twomen * float(duration), 2)
         else:
