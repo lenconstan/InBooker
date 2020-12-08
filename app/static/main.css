@@ -12,6 +12,16 @@ h1, h2, h3, h4, h5, h6 {
   background-color: #5f788a;
 }
 
+.btn-xlarge {
+    
+    padding: 30px 30px;
+    font-size: 22px; //change this to your desired size
+    line-height: normal;
+    -webkit-border-radius: 8px;
+       -moz-border-radius: 8px;
+            border-radius: 8px;
+}
+
 .site-header .navbar-nav .nav-link {
   color: #cbd5db;
 }

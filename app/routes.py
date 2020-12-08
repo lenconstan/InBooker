@@ -7,7 +7,7 @@ from app.forms import LoginForm, GetForm, OrderForm
 from flask import request
 import json
 import requests
-from app.apifunctions import get_activity, update_activity, check_token, servicelevel, get_route_data
+from app.apifunctions import get_activity, update_activity, check_token, servicelevel, get_route_data, get_nextday_activity
 import time
 import dateutil.parser as dparser
 from app import mul
@@ -48,6 +48,40 @@ def page_not_found(e):
 
 # @app.route('/picqer/stockchanges', methods=['GET', 'POST'])
 # def stockchanges():
+
+@app.route('/docker', methods=['GET', 'POST'])
+def docker():
+    form = GetForm()
+    #get the barcode
+    raw_barcode = form.raw_barcode.data
+    if request.method == 'POST' and raw_barcode != '':
+        try:
+            act = get_nextday_activity(raw_barcode, session['token'])
+        except KeyError:
+            flash('Je bent nog niet ingelogd, graag even inloggen!', 'danger')
+            return redirect(url_for('login', next=request.endpoint))
+        if act[1] == 200:
+            if act[0]['items']:
+                db.set(session['token'], json.dumps(act[0]))
+                db.expire(session['token'], 600)
+                return redirect(url_for('order', predes='docker'))
+            else:
+                flash('De ingevoerde order staat niet ingepland voor de aankomende routes', 'danger')
+                return redirect(url_for('docker'))
+        if act[1] == 403:
+            flash('Je sessie is verlopen, graag opnieuw inloggen!', 'danger')
+            return redirect(url_for('login', next=request.endpoint))
+
+        else:
+            flash('Je hebt nog geen barcode gescanned', 'danger')
+    return render_template('docker.html', title='Docker', form=form)
+
+@app.route('/docks', methods=['GET', 'POST'])
+def docks():
+    dock_list = ['Dock 11', 'Dock 10', 'Dock 9', 'Dock 8', 'Dock 7', 'Dock 6', 'Projectenvak', 'UG/RET']
+    if request.method == 'POST':
+        pass
+    return render_template('docks.html', title='Docks', dock_list=dock_list)
 
 @app.route('/routes', methods=['GET', 'POST'])
 @identificate
