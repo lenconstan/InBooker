@@ -209,7 +209,7 @@ def routes_query():
         # rev = round(float(stops) * stop_rev + float(act_dur) * rev_min, 2)
         #Margin
         try:
-            margin = round((rev - exp_costs) / rev, 2)
+            margin = round(((rev - exp_costs) / rev), 2)
         except ZeroDivisionError:
             margin = 0
 
@@ -256,8 +256,9 @@ def routes_query():
 
         exp_totals = {'sum_exp_costs': totals(routes_list, 'exp_costs'), 'sum_exp_rev': totals(routes_list, 'exp_rev')}
         exp_tot_mar = {'sum_exp_margin': round(((exp_totals['sum_exp_rev']-exp_totals['sum_exp_costs'])/exp_totals['sum_exp_rev'])*100, 3)}
+        sum_stops = int(totals(routes_list, 'nr_of_stops'))
 
-    return render_template('routes_query.html', title='Query results', date_from=start2, date_to=stop2, query=routes_list, totals=exp_totals, margin=exp_tot_mar)
+    return render_template('routes_query.html', title='Query results', date_from=start2, date_to=stop2, query=routes_list, totals=exp_totals, margin=exp_tot_mar, sum_stops=sum_stops)
 
 
 @app.route('/test')
