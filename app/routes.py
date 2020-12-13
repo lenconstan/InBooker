@@ -255,7 +255,7 @@ def routes_query_two():
                     if k['id'] == str(j):
 
                         j = {j: k}
-                        print(j)
+                        # print(j)
         # print(routes_list[0]['activity_ids'][0]['reference'])
 
 
