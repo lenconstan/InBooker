@@ -1,0 +1,154 @@
+{% extends "layout.html" %}
+{% block content %}
+      <h1>TESTVERSIE</h1>
+      <h5>Routedata voor uitgevoerde routes van {{ date_from }} tot en met {{ date_to }}</h5>
+      <p>Max. routes = 100</p>
+      <div class="totals">
+        <h3>Verwachte omzet:</h3>
+        <table>
+          <tr>
+            <th>Omzet:  </th>
+            <td>€ {{ totals.sum_exp_rev }}</td>
+          </tr>
+          <tr>
+            <th>Kosten:  </th>
+            <td>€ {{ totals.sum_exp_costs }}</td>
+          </tr>
+          <tr>
+            <th>Marge:  </th>
+            <td>{{ margin.sum_exp_margin }}%</td>
+          </tr>
+          <tr>
+            <th>Stops:  </th>
+            <td>{{ sum_stops }}</td>
+          </tr>
+        </table>
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">NR</th>
+            <th scope="col">Naam</th>
+            <th scope="col">Stops</th>
+            <th scope="col">2mans</th>
+            <!-- <th scope="col">Chauffeur</th> -->
+            <!-- <th scope="col">Bijrijder</th> -->
+            <!-- <th scope="col">Voertuig</th> -->
+            <th scope="col">Km</th>
+            <!-- <th scope="col">Stoptijd</th> -->
+            <th scope="col">Factureerbare stoptijd</th>
+            <th scope="col">Geplande tijd</th>
+            <th scope="col">Daadwerkelijke tijd</th>
+            <th scope="col">Geschatte kosten</th>
+            <th scope="col">Geschatte opbrengst</th>
+            <th scope="col">Geschatte marge</th>
+            <!-- <th scope="col">Zone(s)</th> -->
+            <th scope="col">Datum</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% if query %}
+          {% for i in query %}
+            <tr>
+              <th scope="row">{{ loop.index }}</th>
+              <td>{{ i.nr }}</td>
+              <td>{{ i.name }}</td>
+              <td>{{ i.nr_of_stops }}</td>
+              <td>{{ i.two_man }}</td>
+              <!-- <td>{{ i.driver_full_name }}</td> -->
+              <!-- <td>{{ i.trailer }}</td> -->
+              <!-- <td>{{ i.car }}</td> -->
+              <td>{{ i.planned_driving_distance }}</td>
+              <!-- <td>{{ i.planned_activity_duration }}</td> -->
+              <td>{{ i.billable_minutes }}</td>
+              <td>{{ i.planned_total_duration }}</td>
+              <td>{{ i.actual_duration }}</td>
+              <td>€{{ i.exp_costs }}</td>
+              <td>€{{ i.exp_rev }}</td>
+              <td>{{ i.exp_margin }}%</td>
+              <!-- <td>{{ i.zones }}</td> -->
+              <td>{{ i.date }}</td>
+            </tr>
+          {% endfor %}
+        {% endif %}
+        </tbody>
+  </table>
+
+  <div class="container my-4">
+    <div class="table-responsive">
+    <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">NR</th>
+        <th scope="col">Naam</th>
+        <th scope="col">Stops</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="accordion-toggle collapsed" id="accordion1" data-toggle="collapse" data-parent="#accordion1" href="#collapseOne">
+    <td class="expand-button"></td>
+    <td>Cell</td>
+    <td>Cell</td>
+    <td>Cell</td>
+
+    </tr>
+    <tr class="hide-table-padding">
+    <td></td>
+    <td colspan="3">
+    <div id="collapseOne" class="collapse in p-3">
+    <div class="row">
+    <div class="col-2">label</div>
+    <div class="col-6">value 1</div>
+    </div>
+    <div class="row">
+    <div class="col-2">label</div>
+    <div class="col-6">value 2</div>
+    </div>
+    <div class="row">
+    <div class="col-2">label</div>
+    <div class="col-6">value 3</div>
+    </div>
+    <div class="row">
+    <div class="col-2">label</div>
+    <div class="col-6">value 4</div>
+    </div>
+    </div></td>
+    </tr>
+      <tr class="accordion-toggle collapsed" id="accordion2" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
+    <td class="expand-button"></td>
+    <td>Cell</td>
+    <td>Cell</td>
+    <td>Cell</td>
+
+    </tr>
+    <tr class="hide-table-padding">
+    <td></td>
+    <td colspan="4">
+    <div id="collapseTwo" class="collapse in p-3">
+    <div class="row">
+    <div class="col-2">label</div>
+    <div class="col-6">value</div>
+    </div>
+    <div class="row">
+    <div class="col-2">label</div>
+    <div class="col-6">value</div>
+    </div>
+    <div class="row">
+    <div class="col-2">label</div>
+    <div class="col-6">value</div>
+    </div>
+    <div class="row">
+    <div class="col-2">label</div>
+    <div class="col-6">value</div>
+    </div>
+    </div></td>
+    </tr>
+    </tbody>
+    </table>
+    </div>
+
+  </div>
+
+{% endblock content %}

@@ -7,7 +7,7 @@ from app.forms import LoginForm, GetForm, OrderForm
 from flask import request
 import json
 import requests
-from app.apifunctions import get_activity, update_activity, check_token, servicelevel, get_route_data, get_nextday_activity
+from app.apifunctions import get_activity, update_activity, check_token, servicelevel, get_route_data, get_nextday_activity, get_activity_paginated
 import time
 import dateutil.parser as dparser
 from app import mul
@@ -111,6 +111,160 @@ def routes():
 
 
     return render_template('routes.html', title='RouteDash')
+
+@app.route('/routes_query_two', methods=['GET', 'POST'])
+# @identificate
+def routes_query_two():
+    # obtain datepicker input dates
+    start = request.args['date_from'] or None
+    stop = request.args['date_to'] or None
+    # format selected datetimes for view
+    start2 = start.split('T')[0]
+    stop2 = stop.split('T')[0]
+    route_data = get_route_data(start, stop, 0, session['token'])
+    activity_data = get_activity_paginated(session['token'], start, stop)[0]
+
+    costs = {'1mans': float(Costs.COSTS_ONE), '2mans': float(Costs.COSTS_TWO)}
+    stop_rev = float(Costs.STOP_REV)
+    rev_min = float(Costs.MIN_REV)
+
+    def delta(t1, t2):
+        """Provides the timedelta between two datetime values in minutes"""
+        try:
+            d1 = dparser.parse(t1, fuzzy=True)
+            d2 = dparser.parse(t2, fuzzy=True)
+            factors = (60, 1, 1/60)
+            duration = str((d2 - d1))
+            duration_minutes = sum(i*j for i, j in zip(map(int, duration.split(':')), factors))
+            return str(round(duration_minutes))
+        except:
+            return 'NA'
+
+    def try_it(input_key):
+        try:
+            if input_key:
+                return input_key
+            else:
+                return 'NA'
+        except:
+            return 'NA'
+
+    def safeget(dct, *keys):
+        for key in keys:
+            try:
+                dct = dct[key]
+            except (KeyError, TypeError) as e:
+                return 'NA'
+        return dct
+
+    def def_two_men(val_a, val_b, na_val):
+        if val_a == na_val and val_b == na_val:
+            return True
+        elif val_a != na_val and val_b != na_val:
+            return True
+        elif val_b != na_val:
+            return True
+        else:
+            return False
+
+    def list_to_string(s):
+        try:
+            str1 = " "
+            return (str1.join(s))
+        except (KeyError, TypeError) as e:
+            return 'NA'
+
+    def split_it(it, split_char, split_index):
+        try:
+            if type(it) is str:
+                return it.split(split_char)[split_index]
+        except (KeyError, TypeError) as e:
+            return 'NA'
+
+    def sort_by_date(list_obj):
+        try:
+            list_obj.sort(key = lambda x:x['date'])
+        except (KeyError, TypeError) as e:
+            pass
+
+    def get_tag(list_obj, tag):
+        if list_obj:
+            return tag in list_obj
+        else:
+            return False
+
+    def rev_exp(driver, trailer, trailer_val, bool, costs_oneman, costs_twomen, stops, stop_rev, duration, rev_min, act_dur, loading_time, unloading_time):
+        exp_costs = 0
+        #Expenses
+
+        #Determine 2mans or 1mans and calculate costs with according cost figures
+        if driver == trailer_val and trailer == trailer_val:
+            exp_costs = round(costs_twomen * float(duration), 2)
+        elif trailer != trailer_val:
+            exp_costs = round(costs_twomen * float(duration), 2)
+        else:
+            exp_costs = round(costs_oneman * float(duration), 2)
+
+        # if bool is True:
+        #     exp_costs = round(costs_twomen * (float(duration) - float(loading_time) - float(unloading_time)), 2)
+        # else:
+        #     exp_costs = round(costs_oneman * (float(duration) - float(loading_time) - float(unloading_time)), 2)
+        #Revenue
+        rev = round(float(stops) * stop_rev + (float(act_dur) - float(loading_time) - float(unloading_time)) * rev_min, 2)
+        # rev = round(float(stops) * stop_rev + float(act_dur) * rev_min, 2)
+        #Margin
+        try:
+            margin = round(((rev - exp_costs) / rev), 2)
+        except ZeroDivisionError:
+            margin = 0
+
+        return exp_costs, rev, margin
+
+    def totals(list, object_to_sum):
+        try:
+            total = 0
+            for i in list:
+                total += float(i[object_to_sum])
+
+            return round(total, 2)
+        except TypeError:
+            return 'NA'
+
+    # print(route_data)
+    routes_list = []
+    if route_data[1] == 200 and route_data[0]['items']:
+        for i in route_data[0]['items']:
+            routes_list.append({'id': safeget(i, 'id'), 'nr': safeget(i,'nr'), 'name': safeget(i, 'name'), 'nr_of_stops': safeget(i,'nr_of_stops'),
+            'driver_full_name': safeget(i, 'driver', 'full_name'), 'trailer' :safeget(i, 'trailer', 'name'), 'car': safeget(i, 'car', 'name'), 'planned_driving_distance': try_it(str(round(int(i['planned_driving_distance'])/1000, 1))),
+             'planned_activity_duration': safeget(i, 'planned_activity_duration'), 'billable_minutes': (float(safeget(i, 'planned_activity_duration')) - float(safeget(i, 'planned_start_duration')) - float(safeget(i, 'planned_end_duration'))),
+             'planned_total_duration': safeget(i, 'planned_total_duration'), 'actual_duration': delta(safeget(i, 'executed_date_time_from'), safeget(i, 'executed_date_time_to')), 'date': split_it(safeget(i, 'planned_date_time_from'), ' ', 0), 'zones': list_to_string(safeget(i, 'zone_names')), 'two_man': def_two_men(safeget(i, 'driver', 'full_name'), safeget(i, 'trailer', 'name'), 'NA'),
+             'planned_start_duration' : safeget(i, 'planned_start_duration'), 'planned_end_duration': safeget(i, 'planned_end_duration'), 'activity_ids': safeget(i, 'activity_ids'),
+             'exp_costs': rev_exp(safeget(i, 'driver', 'full_name'), safeget(i, 'trailer', 'name'), 'NA', get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), stop_rev, safeget(i, 'planned_total_duration'),rev_min, safeget(i, 'planned_activity_duration'), safeget(i, 'planned_start_duration'), safeget(i, 'planned_end_duration'))[0],
+             'exp_rev': rev_exp(safeget(i, 'driver', 'full_name'), safeget(i, 'trailer', 'name'), 'NA', get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), stop_rev, safeget(i, 'planned_total_duration'),rev_min, safeget(i, 'planned_activity_duration'), safeget(i, 'planned_start_duration'), safeget(i, 'planned_end_duration'))[1],
+             'exp_margin': rev_exp(safeget(i, 'driver', 'full_name'), safeget(i, 'trailer', 'name'), 'NA', get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), stop_rev, safeget(i, 'planned_total_duration'),rev_min, safeget(i, 'planned_activity_duration'), safeget(i, 'planned_start_duration'), safeget(i, 'planned_end_duration'))[2] *100
+
+              })
+
+
+
+        sort_by_date(routes_list)
+
+        for i in routes_list:
+            for j in i['activity_ids']:
+                for k in activity_data:
+                    if k['id'] == str(j):
+
+                        j = {j: k}
+                        print(j)
+        # print(routes_list[0]['activity_ids'][0]['reference'])
+
+
+        exp_totals = {'sum_exp_costs': totals(routes_list, 'exp_costs'), 'sum_exp_rev': totals(routes_list, 'exp_rev')}
+        exp_tot_mar = {'sum_exp_margin': round(((exp_totals['sum_exp_rev']-exp_totals['sum_exp_costs'])/exp_totals['sum_exp_rev'])*100, 3)}
+        sum_stops = int(totals(routes_list, 'nr_of_stops'))
+
+        return render_template('routes_query_two.html', title='Query results', date_from=start2, date_to=stop2, query=routes_list, totals=exp_totals, margin=exp_tot_mar, sum_stops=sum_stops)
+
 
 
 @app.route('/routes_query', methods=['GET', 'POST'])
