@@ -4,6 +4,7 @@ import datetime
 import math
 
 def trim_input(string):
+    string = string.strip()
     "Trims the barcode input for barcode input"
     if len(string) > 4:
         if string[-2] == '-':
