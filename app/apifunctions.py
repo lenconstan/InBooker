@@ -10,17 +10,21 @@ def trim_input(string):
         if string[-2] == '-':
             newstring = string[:-2]
             string = newstring
-            if 'XLS' or 'BR8' in string and len(string) > 9 and len(string) < 13:
+            if ('XLS' or 'BR8') in string and len(string) > 9 and len(string) < 13:
                 string = string[:3] + '00' + string[3:]
         elif string[-3] == '-':
             newstring = string[:-3]
             string = newstring
-            if 'XLS' or 'BR8' in string and len(string) > 9 and len(string) < 13:
+            if ('XLS' or 'BR8') in string and len(string) > 9 and len(string) < 13:
                 string = string[:3] + '00' + string[3:]
         else:
             pass
 
     return string
+
+
+print(trim_input('BR80000016540-1'))
+
 
 def login(email, password):
     """Log in with user credentials. Retrieves a 'token' needed for other requests"""
