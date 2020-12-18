@@ -13,6 +13,8 @@ def trim_input(string):
             if 'XLS' or 'BR8' in string:
                 if len(string) == 11:
                     string = string[:3] + '00' + string[3:]
+                elif len(string) == 10:
+                    string = string[:3] + '000' + string[3:]
                 else:
                     pass
             else:
@@ -23,6 +25,8 @@ def trim_input(string):
             if 'XLS' or 'BR8' in string:
                 if len(string) == 11:
                     string = string[:3] + '00' + string[3:]
+                elif len(string) == 10:
+                    string = string[:3] + '000' + string[3:]
                 else:
                     pass
             else:
