@@ -159,13 +159,17 @@ def routes_query_two():
 
     def def_two_men(val_a, val_b, na_val):
         if val_a == na_val and val_b == na_val:
-            return True
+            return '2mans'
+            # return True
         elif val_a != na_val and val_b != na_val:
-            return True
+            return '2mans'
+            # return True
         elif val_b != na_val:
-            return True
+            return '2mans'
+            # return True
         else:
-            return False
+            return '1mans'
+            # return False
 
     def list_to_string(s):
         try:
@@ -253,11 +257,15 @@ def routes_query_two():
             for j in i['activity_ids']:
                 for k in activity_data:
                     if k['id'] == str(j):
-
-                        j = {j: k}
-                        # print(j)
-        # print(routes_list[0]['activity_ids'][0]['reference'])
-
+                        temp = servicelevel(safeget(k, 'tags'), "tag_type_name", ['2mans'])
+                        # print(routes_list[routes_list.index(i)]['activity_ids'][i['activity_ids'].index(j)])
+                        routes_list[routes_list.index(i)]['activity_ids'][i['activity_ids'].index(j)] = {
+                        'reference': safeget(k, 'reference'),
+                        'party_name': safeget(k, 'assignment', 'party_name'),
+                        'duration': safeget(k, 'duration'),
+                        'servicelevel': servicelevel(safeget(k, 'tags'), "tag_type_name", ['Overalinhuis', 'Gebruiksklaar', 'Project', 'Ophalen+Verpakken (kwetsbaar)', 'Ophalen', 'Magazijnretour', 'Beganegrond', 'Magazijn Ophalen']),
+                        'manpower': (lambda x : '2mans' if x == '2mans' else '1mans')(temp)
+                        }
 
         exp_totals = {'sum_exp_costs': totals(routes_list, 'exp_costs'), 'sum_exp_rev': totals(routes_list, 'exp_rev')}
         exp_tot_mar = {'sum_exp_margin': round(((exp_totals['sum_exp_rev']-exp_totals['sum_exp_costs'])/exp_totals['sum_exp_rev'])*100, 3)}
