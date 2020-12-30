@@ -4,13 +4,16 @@ import redis
 from datetime import datetime, date
 from functools import wraps
 from operator import mul
+from flask_googlemaps import GoogleMaps, Map
 
 
 from flask import session
 from flask_session import Session
 
 app = Flask(__name__)
+GoogleMaps(app, key=Config.GOOGLEMAPS_KEY)
 app.config.from_object(Config)
 db=redis.from_url(Config.REDISCLOUD_URL)
+
 
 from app import routes

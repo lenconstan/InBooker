@@ -11,6 +11,7 @@ from app.apifunctions import get_activity, update_activity, check_token, service
 import time
 import dateutil.parser as dparser
 from app import mul
+from app import GoogleMaps, Map
 
 @app.before_request
 def before_request():
@@ -48,6 +49,7 @@ def page_not_found(e):
 
 # @app.route('/picqer/stockchanges', methods=['GET', 'POST'])
 # def stockchanges():
+
 
 @app.route('/docker', methods=['GET', 'POST'])
 def docker():
@@ -121,8 +123,16 @@ def routes_query_two():
     # format selected datetimes for view
     start2 = start.split('T')[0]
     stop2 = stop.split('T')[0]
+
+    start_time = time.time()
+
     route_data = get_route_data(start, stop, 0, session['token'])
+
+    print("--- %s seconds ---" % (time.time() - start_time))
+    start_time = time.time()
     activity_data = get_activity_paginated(session['token'], start, stop)[0]
+
+    print("--- %s seconds ---" % (time.time() - start_time))
 
     costs = {'1mans': float(Costs.COSTS_ONE), '2mans': float(Costs.COSTS_TWO)}
     stop_rev = float(Costs.STOP_REV)
@@ -252,7 +262,7 @@ def routes_query_two():
 
 
         sort_by_date(routes_list)
-
+        start_time = time.time()
         for i in routes_list:
             for j in i['activity_ids']:
                 for k in activity_data:
@@ -266,6 +276,8 @@ def routes_query_two():
                         'servicelevel': servicelevel(safeget(k, 'tags'), "tag_type_name", ['Overalinhuis', 'Gebruiksklaar', 'Project', 'Ophalen+Verpakken (kwetsbaar)', 'Ophalen', 'Magazijnretour', 'Beganegrond', 'Magazijn Ophalen']),
                         'manpower': (lambda x : '2mans' if x == '2mans' else '1mans')(temp)
                         }
+
+        print("--- %s seconds ---" % (time.time() - start_time))
 
         exp_totals = {'sum_exp_costs': totals(routes_list, 'exp_costs'), 'sum_exp_rev': totals(routes_list, 'exp_rev')}
         exp_tot_mar = {'sum_exp_margin': round(((exp_totals['sum_exp_rev']-exp_totals['sum_exp_costs'])/exp_totals['sum_exp_rev'])*100, 3)}
