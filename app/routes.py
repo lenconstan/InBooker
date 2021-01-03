@@ -11,7 +11,7 @@ from app.apifunctions import get_activity, update_activity, check_token, service
 import time
 import dateutil.parser as dparser
 from app import mul
-from app import GoogleMaps, Map
+
 
 @app.before_request
 def before_request():
