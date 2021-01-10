@@ -18,11 +18,12 @@ from app.labelmaker import gen_pdf
 def custshipping():
 
     content = request.json
+    # print(content)
     print(type(content))
     content_dict = content
 
     fulfillment_cust_id = inpf.safeget(content_dict, 'picklist', 'idfulfilment_customer')
-
+    print(fulfillment_cust_id)
     #get fulfillment customer data
     fulfillment_cust = get_fulfillment_customer(ApiKeys.PICQER_API_KEY, fulfillment_cust_id)
     status_code = fulfillment_cust[1]
@@ -35,7 +36,7 @@ def custshipping():
                     'telephone': '',
                     'picklistid': ''}
     if status_code == 200:
-        template_data['fulfillmentcustomer'] = inpf.safeget(request_dict, name, 'Niet beschikbaar')
+        template_data['fulfillmentcustomer'] = inpf.safeget(request_dict, 'name', 'Niet beschikbaar')
 
     template_data['reference'] = inpf.safeget(content, 'picklist', 'reference')
     template_data['deliveryname'] = inpf.safeget(content, 'picklist', 'deliveryname')
@@ -54,6 +55,7 @@ def custshipping():
                             "label_contents_pdf": label})
     except:
         return jsonify('Error in mailclient'), 400
+
 
 @app.before_request
 def before_request():

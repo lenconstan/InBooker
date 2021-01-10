@@ -210,11 +210,10 @@ def get_fulfillment_customer(token, id):
 
     payload={}
     headers = {
-      '': '',
       'Authorization': token
     }
 
     response = requests.request("GET", url, headers=headers, data=payload)
     response_dict = json.loads(response.text)
-    
+
     return response_dict, response.status_code
