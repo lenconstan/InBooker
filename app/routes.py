@@ -34,8 +34,7 @@ def custshipping():
                     'telephone': '',
                     'picklistid': ''}
     if status_code == 200:
-        template_data['fulfillmentcustomer'] = inpf.safeget(request_dict, 'name', 'Niet beschikbaar')
-
+        template_data['fulfillmentcustomer'] = inpf.safeget(request_dict, 'name', na_value='Niet beschikbaar')
     template_data['reference'] = inpf.safeget(content, 'picklist', 'reference')
     template_data['deliveryname'] = inpf.safeget(content, 'picklist', 'deliveryname')
     template_data['emailaddress'] = inpf.safeget(content, 'picklist', 'emailaddress')
@@ -49,7 +48,7 @@ def custshipping():
         return jsonify('Error in label generation'), 400
 
     try:
-        MailClient.send_grid(template_data.get('deliveryname', 'NA'), template_data.get('emailaddress', 'NA'), template_data.get('deliveryname', 'NA'), template_data.get('picklistid', 'NA'))
+        MailClient.send_grid(template_data.get('deliveryname', 'NA'), template_data.get('emailaddress', 'NA'), template_data.get('fulfillmentcustomer', 'NA'), template_data.get('reference', 'NA'))
         return jsonify({"identifier": "Ophalen",
                             "label_contents_pdf": label})
     except:

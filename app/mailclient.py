@@ -17,7 +17,7 @@ class MailClient():
           <body>
             <p>Hallo %s,<br>
              <br>
-               Je bestelling van %s met ordernummer %s staat klaar om afgehaald te worden.<br>
+               Je bestelling van %s met referentie %s staat klaar om afgehaald te worden.<br>
                Onze openingstijden zijn: <br>
                <br>
                met vriendelijke groet,<br>
@@ -38,6 +38,8 @@ class MailClient():
         try:
             sg = SendGridAPIClient(ApiKeys.SENDGRID_API_KEY)
             response = sg.send(message)
+            print('sendgrid:')
+            print(response)
             print(response.status_code)
             print(response.body)
             print(response.headers)

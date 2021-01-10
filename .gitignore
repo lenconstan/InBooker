@@ -4,3 +4,4 @@ env
 env.py
 .env
 inbooker
+**/__pycache__
