@@ -12,7 +12,7 @@ def gen_pdf(html_source):
     html = html_source
     pdf = pisa.pisaDocument(io.BytesIO(html.encode("ISO-8859-1")), result)
     base64_pdf = base64.b64encode(result.getvalue()).decode()
-    print(base64_pdf)
+    
     return base64_pdf
 
 # def gen_pdf(html_source):

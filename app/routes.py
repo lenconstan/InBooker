@@ -13,6 +13,7 @@ import time
 import dateutil.parser as dparser
 from app import mul
 from app.labelmaker import gen_pdf
+from app.mailclient import MailClient
 
 @app.route('/api/custshipping', methods=['GET', 'POST'])
 def custshipping():
@@ -43,6 +44,7 @@ def custshipping():
 
     try:
         label = gen_pdf(render_template('label.html', template_data=template_data))
+
     except:
         return jsonify('Error in label generation'), 400
 

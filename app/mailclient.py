@@ -2,6 +2,7 @@ from app import sendgrid
 from app import ApiKeys
 
 import os
+from app import sendgrid
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
