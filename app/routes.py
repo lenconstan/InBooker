@@ -1,18 +1,58 @@
-from app import app, Session, session, render_template, url_for, request, redirect, flash
+from app import app, Session, session, render_template, url_for, request, redirect, flash, jsonify
 from app import db
 from app import wraps
 from app import datetime, date
-from app import Costs
+from app import Costs, ApiKeys
 from app.forms import LoginForm, GetForm, OrderForm
 from flask import request
 import json
 import requests
-from app.apifunctions import get_activity, update_activity, check_token, servicelevel, get_route_data, get_nextday_activity, get_activity_paginated
+from app.apifunctions import get_activity, update_activity, check_token, servicelevel, get_route_data, get_nextday_activity, get_activity_paginated, get_fulfillment_customer
 from app.dashfunctions import TimeFunctions as tf, InputFunctions as inpf, CostFunctions as cf
 import time
 import dateutil.parser as dparser
 from app import mul
+from app.labelmaker import gen_pdf
 
+@app.route('/api/custshipping', methods=['GET', 'POST'])
+def custshipping():
+
+    content = request.json
+    content_dict = json.loads(content)
+
+    fulfillment_cust_id = inpf.safeget(content_dict, 'picklist', 'idfulfilment_customer')
+
+    #get fulfillment customer data
+    request = get_fulfillment_customer(ApiKeys.PICQER_API_KEY, fulfillment_cust_id)
+    status_code = request[1]
+    request_dict = request[0]
+
+    template_data = {'fulfillmentcustomer': '',
+                    'reference': '',
+                    'deliveryname': '',
+                    'emailaddress': '',
+                    'telephone': '',
+                    'picklistid': ''}
+    if status_code == 200:
+        template_data['fulfillmentcustomer'] = inpf.safeget(request_dict, name, 'Niet beschikbaar')
+
+    template_data['reference'] = inpf.safeget(content, 'picklist', 'reference')
+    template_data['deliveryname'] = inpf.safeget(content, 'picklist', 'deliveryname')
+    template_data['emailaddress'] = inpf.safeget(content, 'picklist', 'emailaddress')
+    template_data['telephone'] = inpf.safeget(content, 'picklist', 'telephone')
+    template_data['picklistid'] = inpf.safeget(content, 'picklist', 'picklistid')
+
+    try:
+        label = gen_pdf(render_template('label.html', template_data=template_data))
+    except:
+        return jsonify('Error in label generation'), 400
+
+    try:
+        MailClient.send_grid(template_data.get('deliveryname', 'NA'), template_data.get('emailaddress', 'NA'), template_data.get('deliveryname', 'NA'), template_data.get('picklistid', 'NA'))
+        return jsonify({"identifier": "Ophalen",
+                            "label_contents_pdf": label})
+    except:
+        return jsonify('Error in mailclient'), 400
 
 @app.before_request
 def before_request():

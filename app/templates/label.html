@@ -1,25 +1,43 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
     <title>My HTML Document</title>
-    <style>
-        body { background-color: YellowGreen; }
-        p { color: #fff; }
-        @media print {
-          @page {
-            size: A6 landscape !important; /* landscape */
-            /* you can also specify margins here: */
-            margin: 25mm;
-            margin-right: 45mm; /* for compatibility with both A4 and Letter */
-                }
-              }
-    </style>
+    <link href='https://fonts.googleapis.com/css?family=Libre%20Barcode%2039%20Text' rel='stylesheet'>
 </head>
+<style>
+.p2 {
+font-family: Arial, Helvetica, sans-serif;
+}
+.c39t {
+font-family: 'Libre Barcode 39 Text';font-size: 50px;
+}
+
+.c128 {
+font-family: 'Libre Barcode 128';font-size: 60px;
+}
+@media print {
+        @page {
+          size: A6 landscape; /* landscape */
+          /* you can also specify margins here: */
+          margin: 5mm;
+          margin-right: 5mm;
+
+              }
+            }
+</style>
+
 <body>
-    <h1>This is a headingdwiodjawodijaodjioadjoiawidjoawdjoaldjadjaoldjaowdjadij</h1>
-    <p>This is a paragraph of text.</p>
-    <p><img src="https://cdn4.iconfinder.com/data/icons/logos-and-brands-1/512/351_Ups_logo-512.png" alt="ups logo" width="40" height="40" /></p>
-    <p style="text-align: center;"><strong>Order<br /></strong>Klantnaam<br />gegevens A<br />gegevens B<br />gegevens C</p>
-    <p style="text-align: center;">&nbsp;</p>
+  <p><img src="https://1000logos.net/wp-content/uploads/2018/08/DHL-emblem.jpg" alt="ups logo" width="120" height="120"></p>
+  <h1 id="mi" class="p2" style="text-align: center;"><strong>Opdrachtgever<br/>Klantnaam<br/>Ordernummer</strong></h1>
+  <p id="id2" class="p2" style="text-align: center;">Gegevens<br />Gegevens<br />Gegevens</p>
+  <!-- <p class="c39t" style="text-align: center;"> *P2021-10001*</p>   replace with *{{ var }}* -->
+
+  <p style="page-break-before: always"></p>
+  <p><img src="https://1000logos.net/wp-content/uploads/2018/08/DHL-emblem.jpg" alt="ups logo" width="120" height="120"></p>
+  <h1 id="mi" class="p2" style="text-align: center;"><strong>Opdrachtgever<br/>Klantnaam<br/>Ordernummer</strong></h1>
+  <p id="id2" class="p2" style="text-align: center;">Gegevens<br />Gegevens<br />Gegevens</p>
+  <!-- <p class="c39t" style="text-align: center;"> *P2021-10001*</p>  replace with *{{ var }}* -->
+
+
 </body>
 </html>

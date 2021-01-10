@@ -16,3 +16,7 @@ class Costs(object):
     MIN_REV = os.environ.get('MIN_REV') or 0
     STOP_REVS = os.environ.get('STOP_REVS') or {}
     TYPES = os.environ.get('TYPES') or {}
+
+class ApiKeys(object):
+    SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
+    PICQER_API_KEY = os.environ.get('PICQER_API_KEY')
