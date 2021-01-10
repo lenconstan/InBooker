@@ -18,14 +18,15 @@ from app.labelmaker import gen_pdf
 def custshipping():
 
     content = request.json
-    content_dict = json.loads(content)
+    print(type(content))
+    content_dict = content
 
     fulfillment_cust_id = inpf.safeget(content_dict, 'picklist', 'idfulfilment_customer')
 
     #get fulfillment customer data
-    request = get_fulfillment_customer(ApiKeys.PICQER_API_KEY, fulfillment_cust_id)
-    status_code = request[1]
-    request_dict = request[0]
+    fulfillment_cust = get_fulfillment_customer(ApiKeys.PICQER_API_KEY, fulfillment_cust_id)
+    status_code = fulfillment_cust[1]
+    request_dict = fulfillment_cust[0]
 
     template_data = {'fulfillmentcustomer': '',
                     'reference': '',
