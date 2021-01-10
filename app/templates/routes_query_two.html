@@ -1,6 +1,5 @@
 {% extends "layout.html" %}
 {% block content %}
-      <h1>TESTVERSIE</h1>
       <h5>Routedata voor uitgevoerde routes van {{ date_from }} tot en met {{ date_to }}</h5>
       <p>Max. routes = 100</p>
       <div class="totals">
@@ -76,6 +75,7 @@
               <td>{{ i.exp_margin }}%</td>
               <!-- <td>{{ i.zones }}</td> -->
               <td>{{ i.date }}</td>
+              <td>{{ i.route_rev }}</td>
             </tr>
 
           <tr class="hide-table-padding">
@@ -91,6 +91,7 @@
                     <div class="col-1">{{ j.duration }}</div>
                     <div class="col"><span class="badge badge-pill badge-primary">{{ j.servicelevel }}</span></div>
                     <div class="col"><span class="badge badge-pill badge-primary">{{ j.manpower }}</span></div>
+                    <div class="col-1">€{{ j.stop_rev }}</div>
                   </div>
                 {% endfor %}
               {% endif %}

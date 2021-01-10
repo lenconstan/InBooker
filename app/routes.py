@@ -8,6 +8,7 @@ from flask import request
 import json
 import requests
 from app.apifunctions import get_activity, update_activity, check_token, servicelevel, get_route_data, get_nextday_activity, get_activity_paginated
+from app.dashfunctions import TimeFunctions as tf, InputFunctions as inpf, CostFunctions as cf
 import time
 import dateutil.parser as dparser
 from app import mul
@@ -78,6 +79,11 @@ def docker():
             flash('Je hebt nog geen barcode gescanned', 'danger')
     return render_template('docker.html', title='Docker', form=form)
 
+@app.route('/label', methods=['GET', 'POST'])
+def label():
+
+    return render_template('label.html')
+
 @app.route('/docks', methods=['GET', 'POST'])
 def docks():
     dock_list = ['Dock 11', 'Dock 10', 'Dock 9', 'Dock 8', 'Dock 7', 'Dock 6', 'Projectenvak', 'UG/RET']
@@ -108,7 +114,7 @@ def routes():
                 date_to_req = date_from + 'T23:59:59.999Z'
 
         #Forward the datetime data to the query page
-        return redirect(url_for('routes_query', date_from=date_from_req, date_to=date_to_req))
+        return redirect(url_for('routes_query_two', date_from=date_from_req, date_to=date_to_req))
 
 
 
@@ -124,164 +130,52 @@ def routes_query_two():
     start2 = start.split('T')[0]
     stop2 = stop.split('T')[0]
 
-    start_time = time.time()
-
+    activity_data = get_activity_paginated(session['token'], start, stop)[0]
     route_data = get_route_data(start, stop, 0, session['token'])
 
-    print("--- %s seconds ---" % (time.time() - start_time))
-    start_time = time.time()
-    activity_data = get_activity_paginated(session['token'], start, stop)[0]
-
-    print("--- %s seconds ---" % (time.time() - start_time))
-
-    costs = {'1mans': float(Costs.COSTS_ONE), '2mans': float(Costs.COSTS_TWO)}
+    costs = {'1mans': float(Costs.COSTS_ONE) / 60, '2mans': float(Costs.COSTS_TWO)/60}
     stop_rev = float(Costs.STOP_REV)
     rev_min = float(Costs.MIN_REV)
+    stop_revs = json.loads(Costs.STOP_REVS)
+    types = json.loads(Costs.TYPES)
 
-    def delta(t1, t2):
-        """Provides the timedelta between two datetime values in minutes"""
-        try:
-            d1 = dparser.parse(t1, fuzzy=True)
-            d2 = dparser.parse(t2, fuzzy=True)
-            factors = (60, 1, 1/60)
-            duration = str((d2 - d1))
-            duration_minutes = sum(i*j for i, j in zip(map(int, duration.split(':')), factors))
-            return str(round(duration_minutes))
-        except:
-            return 'NA'
-
-    def try_it(input_key):
-        try:
-            if input_key:
-                return input_key
-            else:
-                return 'NA'
-        except:
-            return 'NA'
-
-    def safeget(dct, *keys):
-        for key in keys:
-            try:
-                dct = dct[key]
-            except (KeyError, TypeError) as e:
-                return 'NA'
-        return dct
-
-    def def_two_men(val_a, val_b, na_val):
-        if val_a == na_val and val_b == na_val:
-            return '2mans'
-            # return True
-        elif val_a != na_val and val_b != na_val:
-            return '2mans'
-            # return True
-        elif val_b != na_val:
-            return '2mans'
-            # return True
-        else:
-            return '1mans'
-            # return False
-
-    def list_to_string(s):
-        try:
-            str1 = " "
-            return (str1.join(s))
-        except (KeyError, TypeError) as e:
-            return 'NA'
-
-    def split_it(it, split_char, split_index):
-        try:
-            if type(it) is str:
-                return it.split(split_char)[split_index]
-        except (KeyError, TypeError) as e:
-            return 'NA'
-
-    def sort_by_date(list_obj):
-        try:
-            list_obj.sort(key = lambda x:x['date'])
-        except (KeyError, TypeError) as e:
-            pass
-
-    def get_tag(list_obj, tag):
-        if list_obj:
-            return tag in list_obj
-        else:
-            return False
-
-    def rev_exp(driver, trailer, trailer_val, bool, costs_oneman, costs_twomen, stops, stop_rev, duration, rev_min, act_dur, loading_time, unloading_time):
-        exp_costs = 0
-        #Expenses
-
-        #Determine 2mans or 1mans and calculate costs with according cost figures
-        if driver == trailer_val and trailer == trailer_val:
-            exp_costs = round(costs_twomen * float(duration), 2)
-        elif trailer != trailer_val:
-            exp_costs = round(costs_twomen * float(duration), 2)
-        else:
-            exp_costs = round(costs_oneman * float(duration), 2)
-
-        # if bool is True:
-        #     exp_costs = round(costs_twomen * (float(duration) - float(loading_time) - float(unloading_time)), 2)
-        # else:
-        #     exp_costs = round(costs_oneman * (float(duration) - float(loading_time) - float(unloading_time)), 2)
-        #Revenue
-        rev = round(float(stops) * stop_rev + (float(act_dur) - float(loading_time) - float(unloading_time)) * rev_min, 2)
-        # rev = round(float(stops) * stop_rev + float(act_dur) * rev_min, 2)
-        #Margin
-        try:
-            margin = round(((rev - exp_costs) / rev), 2)
-        except ZeroDivisionError:
-            margin = 0
-
-        return exp_costs, rev, margin
-
-    def totals(list, object_to_sum):
-        try:
-            total = 0
-            for i in list:
-                total += float(i[object_to_sum])
-
-            return round(total, 2)
-        except TypeError:
-            return 'NA'
-
-    # print(route_data)
+    #collect route data
     routes_list = []
     if route_data[1] == 200 and route_data[0]['items']:
         for i in route_data[0]['items']:
-            routes_list.append({'id': safeget(i, 'id'), 'nr': safeget(i,'nr'), 'name': safeget(i, 'name'), 'nr_of_stops': safeget(i,'nr_of_stops'),
-            'driver_full_name': safeget(i, 'driver', 'full_name'), 'trailer' :safeget(i, 'trailer', 'name'), 'car': safeget(i, 'car', 'name'), 'planned_driving_distance': try_it(str(round(int(i['planned_driving_distance'])/1000, 1))),
-             'planned_activity_duration': safeget(i, 'planned_activity_duration'), 'billable_minutes': (float(safeget(i, 'planned_activity_duration')) - float(safeget(i, 'planned_start_duration')) - float(safeget(i, 'planned_end_duration'))),
-             'planned_total_duration': safeget(i, 'planned_total_duration'), 'actual_duration': delta(safeget(i, 'executed_date_time_from'), safeget(i, 'executed_date_time_to')), 'date': split_it(safeget(i, 'planned_date_time_from'), ' ', 0), 'zones': list_to_string(safeget(i, 'zone_names')), 'two_man': def_two_men(safeget(i, 'driver', 'full_name'), safeget(i, 'trailer', 'name'), 'NA'),
-             'planned_start_duration' : safeget(i, 'planned_start_duration'), 'planned_end_duration': safeget(i, 'planned_end_duration'), 'activity_ids': safeget(i, 'activity_ids'),
-             'exp_costs': rev_exp(safeget(i, 'driver', 'full_name'), safeget(i, 'trailer', 'name'), 'NA', get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), stop_rev, safeget(i, 'planned_total_duration'),rev_min, safeget(i, 'planned_activity_duration'), safeget(i, 'planned_start_duration'), safeget(i, 'planned_end_duration'))[0],
-             'exp_rev': rev_exp(safeget(i, 'driver', 'full_name'), safeget(i, 'trailer', 'name'), 'NA', get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), stop_rev, safeget(i, 'planned_total_duration'),rev_min, safeget(i, 'planned_activity_duration'), safeget(i, 'planned_start_duration'), safeget(i, 'planned_end_duration'))[1],
-             'exp_margin': rev_exp(safeget(i, 'driver', 'full_name'), safeget(i, 'trailer', 'name'), 'NA', get_tag(safeget(i, 'tag_names'), '2mans'), costs['1mans'], costs['2mans'], safeget(i,'nr_of_stops'), stop_rev, safeget(i, 'planned_total_duration'),rev_min, safeget(i, 'planned_activity_duration'), safeget(i, 'planned_start_duration'), safeget(i, 'planned_end_duration'))[2] *100
-
+            one_or_two_man = cf.def_two_men(inpf.safeget(i, 'driver', 'full_name'), inpf.safeget(i, 'trailer', 'name'), 'NA')
+            routes_list.append({'id': inpf.safeget(i, 'id'), 'nr': inpf.safeget(i,'nr'), 'name': inpf.safeget(i, 'name'), 'nr_of_stops': inpf.safeget(i,'nr_of_stops'),
+            'driver_full_name': inpf.safeget(i, 'driver', 'full_name'), 'trailer' :inpf.safeget(i, 'trailer', 'name'), 'car': inpf.safeget(i, 'car', 'name'), 'planned_driving_distance': inpf.try_it(str(round(int(i['planned_driving_distance'])/1000, 1)), 0),
+             'planned_activity_duration': inpf.safeget(i, 'planned_activity_duration'), 'billable_minutes': (float(inpf.safeget(i, 'planned_activity_duration')) - float(inpf.safeget(i, 'planned_start_duration')) - float(inpf.safeget(i, 'planned_end_duration'))),
+             'planned_total_duration': inpf.safeget(i, 'planned_total_duration'), 'actual_duration': tf.timedelta(inpf.safeget(i, 'executed_date_time_from'), inpf.safeget(i, 'executed_date_time_to')), 'date': inpf.split_it(inpf.safeget(i, 'planned_date_time_from'), ' ', 0), 'zones': inpf.list_to_string(inpf.safeget(i, 'zone_names')), 'two_man': one_or_two_man,
+             'planned_start_duration' : inpf.safeget(i, 'planned_start_duration'), 'planned_end_duration': inpf.safeget(i, 'planned_end_duration'), 'activity_ids': inpf.safeget(i, 'activity_ids'),
+             'exp_costs': cf.exp_costs(one_or_two_man, inpf.safeget(i, 'planned_total_duration'), costs.get('1mans', 0), costs.get('2mans', 0))
               })
 
-
-
-        sort_by_date(routes_list)
-        start_time = time.time()
+        tf.sort_by_date(routes_list)
+        #collect stop data
         for i in routes_list:
+            route_rev = 0
             for j in i['activity_ids']:
                 for k in activity_data:
                     if k['id'] == str(j):
-                        temp = servicelevel(safeget(k, 'tags'), "tag_type_name", ['2mans'])
-                        # print(routes_list[routes_list.index(i)]['activity_ids'][i['activity_ids'].index(j)])
+                        temp = servicelevel(inpf.safeget(k, 'tags'), "tag_type_name", ['2mans'])
                         routes_list[routes_list.index(i)]['activity_ids'][i['activity_ids'].index(j)] = {
-                        'reference': safeget(k, 'reference'),
-                        'party_name': safeget(k, 'assignment', 'party_name'),
-                        'duration': safeget(k, 'duration'),
-                        'servicelevel': servicelevel(safeget(k, 'tags'), "tag_type_name", ['Overalinhuis', 'Gebruiksklaar', 'Project', 'Ophalen+Verpakken (kwetsbaar)', 'Ophalen', 'Magazijnretour', 'Beganegrond', 'Magazijn Ophalen']),
-                        'manpower': (lambda x : '2mans' if x == '2mans' else '1mans')(temp)
-                        }
+                        'reference': inpf.safeget(k, 'reference'),
+                        'party_name': inpf.safeget(k, 'assignment', 'party_name'),
+                        'duration': inpf.safeget(k, 'duration'),
+                        'servicelevel': servicelevel(inpf.safeget(k, 'tags'), "tag_type_name", ['Overalinhuis', 'Gebruiksklaar', 'Project', 'Ophalen+Verpakken (kwetsbaar)', 'Ophalen', 'Magazijnretour', 'Beganegrond', 'Magazijn Ophalen']),
+                        'manpower': (lambda x : '2mans' if x == '2mans' else '1mans')(temp),
+                        'stop_rev': cf.ind_stop_rev(types, servicelevel(inpf.safeget(k, 'tags'), "tag_type_name", ['Overalinhuis', 'Gebruiksklaar', 'Project', 'Ophalen+Verpakken (kwetsbaar)', 'Ophalen', 'Magazijnretour', 'Beganegrond', 'Magazijn Ophalen']), (lambda x : '2mans' if x == '2mans' else '1mans')(temp), inpf.safeget(k, 'assignment', 'party_name'), 1, int(inpf.safeget(k, 'duration')))}
+                        route_rev+=cf.ind_stop_rev(types, servicelevel(inpf.safeget(k, 'tags'), "tag_type_name", ['Overalinhuis', 'Gebruiksklaar', 'Project', 'Ophalen+Verpakken (kwetsbaar)', 'Ophalen', 'Magazijnretour', 'Beganegrond', 'Magazijn Ophalen']), (lambda x : '2mans' if x == '2mans' else '1mans')(temp), inpf.safeget(k, 'assignment', 'party_name'), 1, int(inpf.safeget(k, 'duration')))
+            t_rl_i = routes_list[routes_list.index(i)]
+            t_rl_i['exp_rev'] = route_rev
+            t_rl_i['exp_margin'] = cf.margin(t_rl_i['exp_costs'], t_rl_i['exp_rev'])
 
-        print("--- %s seconds ---" % (time.time() - start_time))
-
-        exp_totals = {'sum_exp_costs': totals(routes_list, 'exp_costs'), 'sum_exp_rev': totals(routes_list, 'exp_rev')}
+        #compute totals
+        exp_totals = {'sum_exp_costs': cf.totals(routes_list, 'exp_costs'), 'sum_exp_rev': cf.totals(routes_list, 'exp_rev')}
         exp_tot_mar = {'sum_exp_margin': round(((exp_totals['sum_exp_rev']-exp_totals['sum_exp_costs'])/exp_totals['sum_exp_rev'])*100, 3)}
-        sum_stops = int(totals(routes_list, 'nr_of_stops'))
+        sum_stops = int(cf.totals(routes_list, 'nr_of_stops'))
 
         return render_template('routes_query_two.html', title='Query results', date_from=start2, date_to=stop2, query=routes_list, totals=exp_totals, margin=exp_tot_mar, sum_stops=sum_stops)
 
@@ -413,7 +307,7 @@ def routes_query():
     if route_data[1] == 200 and route_data[0]['items']:
         for i in route_data[0]['items']:
             routes_list.append({'id': safeget(i, 'id'), 'nr': safeget(i,'nr'), 'name': safeget(i, 'name'), 'nr_of_stops': safeget(i,'nr_of_stops'),
-            'driver_full_name': safeget(i, 'driver', 'full_name'), 'trailer' :safeget(i, 'trailer', 'name'), 'car': safeget(i, 'car', 'name'), 'planned_driving_distance': try_it(str(round(int(i['planned_driving_distance'])/1000, 1))),
+            'driver_full_name': safeget(i, 'driver', 'full_name'), 'trailer' :safeget(i, 'trailer', 'name'), 'car': safeget(i, 'car', 'name'), 'planned_driving_distance': inpf.try_it(str(round(int(i['planned_driving_distance'])/1000, 1)), 0),
              'planned_activity_duration': safeget(i, 'planned_activity_duration'), 'billable_minutes': (float(safeget(i, 'planned_activity_duration')) - float(safeget(i, 'planned_start_duration')) - float(safeget(i, 'planned_end_duration'))),
              'planned_total_duration': safeget(i, 'planned_total_duration'), 'actual_duration': delta(safeget(i, 'executed_date_time_from'), safeget(i, 'executed_date_time_to')), 'date': split_it(safeget(i, 'planned_date_time_from'), ' ', 0), 'zones': list_to_string(safeget(i, 'zone_names')), 'two_man': def_two_men(safeget(i, 'driver', 'full_name'), safeget(i, 'trailer', 'name'), 'NA'),
              'planned_start_duration' : safeget(i, 'planned_start_duration'), 'planned_end_duration': safeget(i, 'planned_end_duration'),

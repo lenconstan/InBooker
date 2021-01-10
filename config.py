@@ -14,3 +14,5 @@ class Costs(object):
     COSTS_TWO = os.environ.get('COSTS_TWO') or 0
     STOP_REV = os.environ.get('STOP_REV') or 0
     MIN_REV = os.environ.get('MIN_REV') or 0
+    STOP_REVS = os.environ.get('STOP_REVS') or {}
+    TYPES = os.environ.get('TYPES') or {}
