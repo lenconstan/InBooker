@@ -1,7 +1,6 @@
 import io
 import base64
-import pandas
-# from weasyprint import HTML
+
 
 import xhtml2pdf
 import xhtml2pdf.pisa as pisa
