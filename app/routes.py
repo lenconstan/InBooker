@@ -32,7 +32,8 @@ def custshipping():
                     'deliveryname': '',
                     'emailaddress': '',
                     'telephone': '',
-                    'picklistid': ''}
+                    'picklistid': '',
+                    'products': ''}
     if status_code == 200:
         template_data['fulfillmentcustomer'] = inpf.safeget(request_dict, 'name', na_value='Niet beschikbaar')
     template_data['reference'] = inpf.safeget(content, 'picklist', 'reference')
@@ -40,9 +41,12 @@ def custshipping():
     template_data['emailaddress'] = inpf.safeget(content, 'picklist', 'emailaddress')
     template_data['telephone'] = inpf.safeget(content, 'picklist', 'telephone')
     template_data['picklistid'] = inpf.safeget(content, 'picklist', 'picklistid')
+    template_data['products'] = 3 #int(inpf.safeget(content, 'picklist', 'totalproducts', na_value=1))
+
+    print(type(template_data['products']))
 
     try:
-        label = gen_pdf(render_template('label.html', template_data=template_data))
+        label = gen_pdf(render_template('label.html', template_data=template_data, test='test'))
 
     except:
         return jsonify('Error in label generation'), 400
