@@ -3,5 +3,6 @@ venv
 env
 env.py
 .env
+ibvenv
 inbooker
 **/__pycache__

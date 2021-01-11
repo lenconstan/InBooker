@@ -48,7 +48,7 @@ def custshipping():
         return jsonify('Error in label generation'), 400
 
     try:
-        MailClient.send_grid(template_data.get('deliveryname', 'NA'), template_data.get('emailaddress', 'NA'), template_data.get('fulfillmentcustomer', 'NA'), template_data.get('reference', 'NA'))
+        MailClient.post_mark(template_data.get('deliveryname', 'NA'), template_data.get('emailaddress', 'NA'), template_data.get('fulfillmentcustomer', 'NA'), template_data.get('reference', 'NA'))
         return jsonify({"identifier": "Ophalen",
                             "label_contents_pdf": label})
     except:

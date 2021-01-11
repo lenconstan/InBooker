@@ -150,7 +150,7 @@ class CostFunctions():
 
         try:
             ind_rev = 0
-            if account != None:
+            if account not in [None, 'BR8 Meubellogistiek']:
                 if stop_type == 'Magazijn Ophalen':
                     ind_rev = 10
                 elif one_or_two == '1mans':

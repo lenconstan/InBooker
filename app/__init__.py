@@ -6,6 +6,7 @@ from functools import wraps
 from operator import mul
 import xhtml2pdf
 import sendgrid
+import postmarker
 
 
 
@@ -15,6 +16,9 @@ from flask_session import Session
 app = Flask(__name__)
 app.config.from_object(Config)
 db=redis.from_url(Config.REDISCLOUD_URL)
+
+
+
 
 
 from app import routes
