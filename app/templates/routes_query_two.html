@@ -86,11 +86,11 @@
                 {% for j in i.activity_ids %}
                   <div class="row">
                     <div class="col-1">{{ loop.index }}</div>
-                    <div class="col">{{ j.reference }}</div>
-                    <div class="col">{{ j.party_name }}</div>
+                    <div class="col-2">{{ j.reference }}</div>
+                    <div class="col-2">{{ j.party_name }}</div>
                     <div class="col-1">{{ j.duration }}</div>
-                    <div class="col"><span class="badge badge-pill badge-primary">{{ j.servicelevel }}</span></div>
-                    <div class="col"><span class="badge badge-pill badge-primary">{{ j.manpower }}</span></div>
+                    <div class="col-3"><span class="badge badge-pill badge-primary">{{ j.servicelevel }}</span></div>
+                    <div class="col-2"><span class="badge badge-pill badge-primary">{{ j.manpower }}</span></div>
                     <div class="col-1">€{{ j.stop_rev }}</div>
                   </div>
                 {% endfor %}
