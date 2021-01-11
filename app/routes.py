@@ -41,7 +41,10 @@ def custshipping():
     template_data['emailaddress'] = inpf.safeget(content, 'picklist', 'emailaddress')
     template_data['telephone'] = inpf.safeget(content, 'picklist', 'telephone')
     template_data['picklistid'] = inpf.safeget(content, 'picklist', 'picklistid')
-    template_data['products'] = 3 #int(inpf.safeget(content, 'picklist', 'totalproducts', na_value=1))
+    template_data['products'] = int(inpf.safeget(content, 'weight', na_value=1))
+
+    if template_data['products'] > 30:
+        template_data['products'] = 30
 
     print(type(template_data['products']))
 
