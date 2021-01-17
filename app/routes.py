@@ -569,12 +569,33 @@ def order(predes):
         if session['bool_bouwpakket'] == False and request.form.get('bouwpakket_switch') == 'on':
             session['update_dict']['tags'].append({'tag_type_id': '63'})
 
+        # #package_lines
+        # for i in session['str_package_lines_descriptions']:
+        #     if request.form.get(i) != '':
+        #         session['update_dict']['package_lines'][(session['str_package_lines_descriptions'].index(i))]['description'] = '[' + str(request.form.get(i)) + ' ' + session['initials'] + ' '  + str(date.today().strftime("%d%m")) + ']' + session['update_dict']['package_lines'][(session['str_package_lines_descriptions'].index(i))]['description']
+        #     else:
+        #         pass
+
         #package_lines
-        for i in session['str_package_lines_descriptions']:
-            if request.form.get(i) != '':
-                session['update_dict']['package_lines'][(session['str_package_lines_descriptions'].index(i))]['description'] = '[' + str(request.form.get(i)) + ' ' + session['initials'] + ' '  + str(date.today().strftime("%d%m")) + ']' + session['update_dict']['package_lines'][(session['str_package_lines_descriptions'].index(i))]['description']
-            else:
-                pass
+        for i in range(len(session['str_package_lines_descriptions'])):
+            if session['str_package_lines_descriptions'][i] != request.form.get('hidden_laadregel' + str(i+1)):
+                session['update_dict']['package_lines'][i]['description'] = request.form.get('hidden_laadregel' + str(i+1))
+            if request.form.get('locatieinput' + str(i+1)) != '':
+                session['update_dict']['package_lines'][i]['description'] = '[' + str(request.form.get('locatieinput' + str(i+1))) + ' ' + session['initials'] + ' '  + str(date.today().strftime("%d%m")) + ']' +  session['update_dict']['package_lines'][i]['description']
+            # if request.form.get(i) != '':
+            #     session['str_package_lines_descriptions'][i] =
+            #print(request.form.get('hidden_laadregel1'))
+
+            #print("laadregel" + str(session['str_package_lines_descriptions'].index(i)))
+            # if i != request.form.get("laadregel" + str(session['str_package_lines_descriptions'].index(i))):
+            #     #print("false")
+            #     pass
+            # if i != request.form.get("laadregel" + str(session['str_package_lines_descriptions'].index(i))):
+            #     session['str_package_lines_descriptions'][session['str_package_lines_descriptions'].index(i)] = request.form.get("laadregel" + str(session['str_package_lines_descriptions'].index(i)))
+            # if request.form.get(i) != '':
+            #     session['update_dict']['package_lines'][(session['str_package_lines_descriptions'].index(i))]['description'] = '[' + str(request.form.get(i)) + ' ' + session['initials'] + ' '  + str(date.today().strftime("%d%m")) + ']' + session['update_dict']['package_lines'][(session['str_package_lines_descriptions'].index(i))]['description']
+            # else:
+            #     pass
 
         #notes
         if request.form.get("comment-box") != '':

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, RadioField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, RadioField, TextField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 
 class LoginForm(FlaskForm):
@@ -15,3 +15,4 @@ class GetForm(FlaskForm):
 class OrderForm(FlaskForm):
     locatie = StringField("Loc.")
     submit = SubmitField("Update")
+    text = TextField("Text")

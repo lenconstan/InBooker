@@ -1,5 +1,21 @@
 {% extends "layout.html" %}
 {% block content %}
+<script>
+function removeLoc(elem_a, elem_b) {
+  var str = document.getElementById(elem_a).innerHTML;
+  var n = str.indexOf("]");
+  var m = str.indexOf("[")
+  if (n != -1 && confirm("Je staat op het punt een locatie te wijzigen. Weet je het echt zeker?")) {
+    if (n != -1 && m !=-1) {
+      var p1 = str.substring(0, m)
+      var new_string = str.substring(n + 1);
+      document.getElementById(elem_a).innerHTML = p1 + new_string;
+      document.getElementById(elem_b).value = new_string;
+    }
+  }
+}
+</script>
+
 <div class="container-fluid">
     <form method="post" action="">
         {{ form.hidden_tag() }}
@@ -98,18 +114,22 @@
             </div>
             <div class="col">
                 <h5>Laadregels</h5>
+                <p id="string">Click the button ] to locate where in the string a specifed value occurs.</p>
+
+                <button type="button" onclick="removeLoc('string')">Try it</button>
                 {% for i in session['str_package_lines_descriptions'] %}
                     <div class="row">
                     <div class="col-xs-3">
-                        <div class="input-group input-group-sm mb-3">
-                          <div class="input-group-prepend">
-                            <span class="input-group-text">Loc.</span>
-                          </div>
-                          <input type="text" name="{{ i }}" id="locatieinput{{ i.index }}" class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm">
+                        <div class="input-group xs-2">
+                        <div class="input-group-prepend">
+                          <button onclick="removeLoc('laadregel{{ loop.index }}', 'hidden_laadregel{{ loop.index }}')" class="btn btn-outline-danger" type="button">X</button>
                         </div>
+                        <input type="text" name="locatieinput{{ loop.index }}" id="locatieinput{{ i.index }}" class="form-control" placeholder="" aria-label="Small" aria-describedby="basic-addon1-sizing-sm">
+                      </div>
                     </div>
                     <div class="col">
-                        <p class="col-9 d-flex justify-content-center"> {{ i }}</p>
+                        <p type="text" name="laadregel{{ loop.index }}" id="laadregel{{ loop.index }}" class="col-9 d-flex justify-content-center"> {{ i }}</p>
+                        <input hidden type="text" name="hidden_laadregel{{ loop.index }}" id="hidden_laadregel{{ loop.index }}" value="{{ i }}"></input>
                     </div>
                 </div>
                 {% endfor %}
