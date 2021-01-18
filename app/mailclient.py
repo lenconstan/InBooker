@@ -74,7 +74,7 @@ class MailClient():
 
         # Send an email
         postmark.emails.send(
-          From='stan@br8.nl',
+          From=ApiKeys.POSTMARK_MAIL_ADRESS,
           To=customer_emailaddress,
           Subject=subject,
           HtmlBody=html

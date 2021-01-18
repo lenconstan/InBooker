@@ -5,7 +5,7 @@ function removeLoc(elem_a, elem_b) {
   var str = document.getElementById(elem_a).innerHTML;
   var n = str.indexOf("]");
   var m = str.indexOf("[")
-  if (n != -1 && confirm("Je staat op het punt een locatie te wijzigen. Weet je het echt zeker?")) {
+  if (n != -1 && confirm("Je staat op het punt een locatie te verwijderen. Weet je het echt heel zeker?")) {
     if (n != -1 && m !=-1) {
       var p1 = str.substring(0, m)
       var new_string = str.substring(n + 1);
@@ -114,11 +114,8 @@ function removeLoc(elem_a, elem_b) {
             </div>
             <div class="col">
                 <h5>Laadregels</h5>
-                <p id="string">Click the button ] to locate where in the string a specifed value occurs.</p>
-
-                <button type="button" onclick="removeLoc('string')">Try it</button>
                 {% for i in session['str_package_lines_descriptions'] %}
-                    <div class="row">
+                  <div class="row">
                     <div class="col-xs-3">
                         <div class="input-group xs-2">
                         <div class="input-group-prepend">

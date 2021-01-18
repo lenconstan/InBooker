@@ -21,3 +21,4 @@ class ApiKeys(object):
     SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
     PICQER_API_KEY = os.environ.get('PICQER_API_KEY')
     POSTMARK_SERVER_TOKEN = os.environ.get('POSTMARK_SERVER_TOKEN')
+    POSTMARK_MAIL_ADRESS= os.environ.get('POSTMARK_MAIL_ADRESS')
