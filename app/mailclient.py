@@ -20,12 +20,12 @@ class MailClient():
           <body>
             <p>Hallo %s,<br>
              <br>
-               Je bestelling van %s met referentie %s staat klaar om afgehaald te worden.<br>
-               Onze openingstijden zijn: <br>
+               Je bestelling bij %s met referentie %s staat klaar om afgehaald te worden in ons magazijn.<br>
+               U kunt een afspraak maken door op de link te klikken: https://br8.nl/bestelling-afhalen-bij-br8-te-montfoort. <br>
                <br>
                met vriendelijke groet,<br>
                <br>
-               Stan<br>
+               De magazijnmannen van BR8<br>
                <img src="https://d27i7n2isjbnbi.cloudfront.net/careers/photos/118582/normal_photo_1560943732.png" alt="BR8LOGO" width="150" height="150">
 
             </p>
@@ -57,12 +57,12 @@ class MailClient():
           <body>
             <p>Hallo %s,<br>
              <br>
-               Je bestelling van %s met referentie %s staat klaar om afgehaald te worden.<br>
-               Onze openingstijden zijn: <br>
+               Je bestelling bij %s met referentie %s staat klaar om afgehaald te worden in ons magazijn.<br>
+               Maak een ophaalafspraak door op de volgende link te klikken: https://br8.nl/bestelling-afhalen-bij-br8-te-montfoort. <br>
                <br>
                met vriendelijke groet,<br>
                <br>
-               Stan<br>
+               De magazijnmannen van BR8<br>
                <img src="https://d27i7n2isjbnbi.cloudfront.net/careers/photos/118582/normal_photo_1560943732.png" alt="BR8LOGO" width="150" height="150">
 
             </p>
