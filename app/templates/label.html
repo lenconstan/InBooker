@@ -34,9 +34,9 @@ font-family: 'Libre Barcode 128';font-size: 60px;
 <body>
   {% for i in range(template_data.products) %}
     <!-- <p><img src="https://1000logos.net/wp-content/uploads/2018/08/DHL-emblem.jpg" alt="ups logo" width="120" height="120"></p> -->
-    <h0 class='m700'>BR8 Ophalen</h0>
+    <h1 class='m700'>BR8 Ophalen</h0>
     <p>&nbsp;</p>
-    <h0 id="mi" class="p2" style="text-align: center;"><strong>{{ template_data.fulfillmentcustomer }}<br/>{{ template_data.deliveryname }}<br/>{{ template_data.reference }}</strong></h0>
+    <h1 id="mi" class="p2" style="text-align: center;"><strong>{{ template_data.fulfillmentcustomer }}<br/>{{ template_data.deliveryname }}<br/>{{ template_data.reference }}</strong></h1>
     <h2 id="id2" class="p2" style="text-align: center;">{{ template_data.picklistid }}<br/>Colli {{ loop.index }} van {{ template_data.products }}<br/></h2>
     <!-- <p class="c39t" style="text-align: center;"> *P2021-10001*</p>   replace with *{{ var }}* -->
 
