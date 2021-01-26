@@ -216,7 +216,7 @@ def get_fulfillment_customer(token, id):
     response = requests.request("GET", url, headers=headers, data=payload)
     response_dict = json.loads(response.text)
 
-    if response.status_code == 200
+    if response.status_code == 200:
         return response_dict, response.status_code
     else:
         pass
