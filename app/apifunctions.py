@@ -206,7 +206,7 @@ def servicelevel(package_lines, tag_identifier, servicelevels):
         return 'Geen servicelevel aangegeven'
 
 def get_fulfillment_customer(token, id):
-    url = "https://br8-demo.picqer.com/api/v1/fulfilment/customers/{}".format(id)
+    url = "https://br8.picqer.com/api/v1/fulfilment/customers/{}".format(id)
 
     payload={}
     headers = {
@@ -215,6 +215,8 @@ def get_fulfillment_customer(token, id):
 
     response = requests.request("GET", url, headers=headers, data=payload)
     response_dict = json.loads(response.text)
-    print(response_dict)
 
-    return response_dict, response.status_code
+    if response.status_code == 200
+        return response_dict, response.status_code
+    else:
+        pass

@@ -15,4 +15,4 @@ project where I challenge myself to implement new features or improve existing f
 -Expirimentation with javascript to increase responsiveness.<br>
 -Released V2 of the (interactive)dashboard for planners.<br>
 -Added a delete button in order to remove obsolete location tags<br>
--Working towards more seperation (apifunctions, dashfunctions, etc.)
+-Working towards more seperation of concerns(apifunctions, dashfunctions, etc.)
