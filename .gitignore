@@ -1,7 +1,7 @@
 venv
 *.py~
 env
-env.py
+
 .env
 ibvenv
 inbooker
