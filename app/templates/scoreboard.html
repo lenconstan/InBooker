@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block content %}
+<form>
+    <div class="jumbotron">
+        <h1 class="display-4">Scoreboard</h1>
+            {% if leaderboard %}
+                {% for key, val in leaderboard %}
+                    <h2>{{ key }}: {{ val }}</h2>
+                {% endfor %}
+            {% endif %}
+        
+
+      </div>
+      
+      
+        
+
+</form>
+
+
+{% endblock content %}

@@ -1,19 +1,22 @@
 from app import app, Session, session, render_template, url_for, request, redirect, flash, jsonify
-from app import db
+from app import db, rel_db
+from app.models import Updated
 from app import wraps
 from app import datetime, date
 from app import Costs, ApiKeys
 from app.forms import LoginForm, GetForm, OrderForm
 from flask import request
+from sqlalchemy import func
 import json
 import requests
 from app.apifunctions import get_activity, update_activity, check_token, servicelevel, get_route_data, get_nextday_activity, get_activity_paginated, get_fulfillment_customer
 from app.dashfunctions import TimeFunctions as tf, InputFunctions as inpf, CostFunctions as cf
 import time
 import dateutil.parser as dparser
-from app import mul
+from app import mul, itemgetter
 from app.labelmaker import gen_pdf
 from app.mailclient import MailClient
+
 
 @app.route('/api/custshipping', methods=['GET', 'POST'])
 def custshipping():
@@ -524,6 +527,7 @@ def zxingenv():
 
 @app.route('/order/<predes>', methods=['GET', 'POST'])
 def order(predes):
+    predes = predes
     form = OrderForm()
     disabled = 'disabled'
     order_dict = json.loads(db.get(session['token']))['items'][0]
@@ -573,34 +577,13 @@ def order(predes):
         if session['bool_bouwpakket'] == False and request.form.get('bouwpakket_switch') == 'on':
             session['update_dict']['tags'].append({'tag_type_id': '63'})
 
-        # #package_lines
-        # for i in session['str_package_lines_descriptions']:
-        #     if request.form.get(i) != '':
-        #         session['update_dict']['package_lines'][(session['str_package_lines_descriptions'].index(i))]['description'] = '[' + str(request.form.get(i)) + ' ' + session['initials'] + ' '  + str(date.today().strftime("%d%m")) + ']' + session['update_dict']['package_lines'][(session['str_package_lines_descriptions'].index(i))]['description']
-        #     else:
-        #         pass
-
         #package_lines
         for i in range(len(session['str_package_lines_descriptions'])):
             if session['str_package_lines_descriptions'][i] != request.form.get('hidden_laadregel' + str(i+1)):
                 session['update_dict']['package_lines'][i]['description'] = request.form.get('hidden_laadregel' + str(i+1))
             if request.form.get('locatieinput' + str(i+1)) != '':
                 session['update_dict']['package_lines'][i]['description'] = '[' + str(request.form.get('locatieinput' + str(i+1))) + ' ' + session['initials'] + ' '  + str(date.today().strftime("%d%m")) + ']' +  session['update_dict']['package_lines'][i]['description']
-            # if request.form.get(i) != '':
-            #     session['str_package_lines_descriptions'][i] =
-            #print(request.form.get('hidden_laadregel1'))
-
-            #print("laadregel" + str(session['str_package_lines_descriptions'].index(i)))
-            # if i != request.form.get("laadregel" + str(session['str_package_lines_descriptions'].index(i))):
-            #     #print("false")
-            #     pass
-            # if i != request.form.get("laadregel" + str(session['str_package_lines_descriptions'].index(i))):
-            #     session['str_package_lines_descriptions'][session['str_package_lines_descriptions'].index(i)] = request.form.get("laadregel" + str(session['str_package_lines_descriptions'].index(i)))
-            # if request.form.get(i) != '':
-            #     session['update_dict']['package_lines'][(session['str_package_lines_descriptions'].index(i))]['description'] = '[' + str(request.form.get(i)) + ' ' + session['initials'] + ' '  + str(date.today().strftime("%d%m")) + ']' + session['update_dict']['package_lines'][(session['str_package_lines_descriptions'].index(i))]['description']
-            # else:
-            #     pass
-
+        
         #notes
         if request.form.get("comment-box") != '':
             session['update_dict']['notes'] = order_dict['notes']
@@ -612,14 +595,39 @@ def order(predes):
                     "note_category_name": "reference"
                     })
 
+        def update_rel_db(reference, bumbal_id, updated_by):
+            update = Updated(reference=reference, bumbal_id=bumbal_id, updated_by=updated_by)
+            rel_db.session.add(update)
+            rel_db.session.commit()
+
         #update activity
         if bool(session['update_dict']) is True:
             udac = update_activity(session['activityid'], session['update_dict'], session['token'])
             if udac == 200:
+                update_rel_db(inpf.safeget(order_dict, "reference"), inpf.safeget(order_dict, "id"), session['initials'])
                 flash('Activiteit succesvol aangepast!', 'success')
                 udac == 0
                 return redirect(url_for(predes))
             else:
                 redirect(url_for('error'))
 
-    return render_template('order.html', title='Order', form=form)
+    # return render_template('order.html', title='Order', form=form)
+    return render_template('order2.html', title='Order', form=form, predes=predes)
+
+
+@app.route('/scoreboard', methods=['GET'])
+@identificate
+def scoreboard():
+    query = Updated.query.filter(Updated.timestamp > date.today()).all()
+    
+    leaderboard = {}
+    for i in query:
+        if i.updated_by not in leaderboard:
+            leaderboard[i.updated_by] = 0
+        if i.updated_by in leaderboard:
+            leaderboard[i.updated_by] += 1
+
+    leaderboard = sorted(leaderboard.items(), key=itemgetter(1))
+    print(leaderboard)
+        
+    return render_template('scoreboard.html', title='Activiteit ophalen', leaderboard=leaderboard)

@@ -1,12 +1,14 @@
 import os
-import redis
-
 basedir = os.path.abspath(os.path.dirname(__file__))
+import redis
 
 class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY')
-    REDISCLOUD_URL = os.environ.get('REDISCLOUD_URL')
-    FLASK_ENV = os.environ.get('FLASK_ENV')
+    FLASK_ENV = os.environ.get('FLASK_ENV') #Development or Production
+    REDISCLOUD_URL = os.environ.get('REDISCLOUD_URL') #Redis cache
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'sqlite:///' + os.path.join(basedir, 'app.db') #SQL database
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
 class Costs(object):

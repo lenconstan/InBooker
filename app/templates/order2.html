@@ -1,0 +1,205 @@
+{% extends "layout.html" %}
+{% block content %}
+<script>
+function removeLoc(elem_a, elem_b) {
+  var str = document.getElementById(elem_a).innerHTML;
+  var n = str.indexOf("]");
+  var m = str.indexOf("[")
+  if (n != -1 && confirm("Je staat op het punt een locatie te verwijderen. Weet je het echt heel zeker?")) {
+    if (n != -1 && m !=-1) {
+      var p1 = str.substring(0, m)
+      var new_string = str.substring(n + 1);
+      document.getElementById(elem_a).innerHTML = p1 + new_string;
+      document.getElementById(elem_b).value = new_string;
+    }
+  }
+}
+
+$(document).ready(function() {
+
+$('.selectpicker').selectpicker();
+
+});
+</script>
+
+<div class="container-fluid">
+    <form method="post" action="">
+        {{ form.hidden_tag() }}
+         <fieldset class="form-group">
+            <div class="jumbotron">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <h4>
+                            Ordergegevens
+                        </h4>
+                        <table>
+                          <tr>
+                            <th>Ordernummer:  </th>
+                            <td>{{ session['reference'] }}</td>
+                          </tr>
+                          <tr>
+                            <th>Opdrachtgever:  </th>
+                            <td>{{ session['assingment_party_name'] }}</td>
+                          </tr>
+                          <tr>
+                            <th>Naam:  </th>
+                            <td>{{ session['name'] }}</td>
+                          </tr>
+                          <tr>
+                            <th>Servicelevel:  </th>
+                            <td>{{ session['servicelevel'] }}</td>
+                          </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="jumbotron">
+                <div class="col">
+                    <h5>SayWhen</h5>
+                    <div class="row">
+                        <div class="col">
+
+                            <div class="custom-control custom-switch">
+                                {% if session['saywhen'] == '1' %}
+                                <input type="checkbox" name="saywhen_switch" class="custom-control-input" disabled id="customSwitch1" checked>
+                                {% elif session['saywhen'] == '0' %}
+                                <input type="checkbox" name="saywhen_switch" class="custom-control-input" id="customSwitch1">
+                                {% endif %}
+                                <label class="custom-control-label" for="customSwitch1">Activeer SayWhen</label>
+                            </div>
+                        </div>
+                    </div>
+                <h5>Tags</h5>
+                <div class="row">
+                    <div class="col">
+                    <div class="custom-control custom-switch">
+                        {% if session['bool_2mans'] == false %}
+                        <input type="checkbox" name="tweemans_switch" class="custom-control-input" id="customSwitch2">
+                        {% elif session['bool_2mans'] == true %}
+                        <input type="checkbox" name="tweemans_switch" class="custom-control-input" disabled id="customSwitch2" checked>
+                        {% endif %}
+                        <label class="custom-control-label" for="customSwitch2">2mans</label>
+                    </div>
+                    <div class="custom-control custom-switch">
+                        {% if session['bool_laadklep'] == false %}
+                        <input type="checkbox" name="laadklep_switch" class="custom-control-input" id="customSwitch3">
+                        {% elif session['bool_laadklep'] == true %}
+                        <input type="checkbox" name="laadklep_switch" class="custom-control-input" disabled id="customSwitch3" checked>
+                        {% endif %}
+                        <label class="custom-control-label" for="customSwitch3">Laadklep</label>
+                    </div>
+                </div>
+                    <div class="col">
+                        <div class="custom-control custom-switch">
+                            {% if session['bool_4mans'] == false %}
+                            <input type="checkbox" name="viermans_switch" class="custom-control-input" id="customSwitch4">
+                            {% elif session['bool_4mans'] == true %}
+                            <input type="checkbox" name="viermans_switch" class="custom-control-input" disabled id="customSwitch4" checked>
+                            {% endif %}
+                            <label class="custom-control-label" for="customSwitch4">4mans</label>
+                        </div>
+                        <div class="custom-control custom-switch">
+                            {% if session['bool_project'] == false %}
+                            <input type="checkbox" name="project_switch" class="custom-control-input" id="customSwitch5">
+                            {% elif session['bool_project'] == true %}
+                            <input type="checkbox" name="project_switch" class="custom-control-input" disabled id="customSwitch5" checked>
+                            {% endif %}
+                            <label class="custom-control-label" for="customSwitch5">Project</label>
+                        </div>
+                        <div class="custom-control custom-switch">
+                            {% if session['bool_bouwpakket'] == false %}
+                            <input type="checkbox" name="bouwpakket_switch" class="custom-control-input" id="customSwitch6">
+                            {% elif session['bool_bouwpakket'] == true %}
+                            <input type="checkbox" name="bouwpakket_switch" class="custom-control-input" disabled id="customSwitch6" checked>
+                            {% endif %}
+                            <label class="custom-control-label" for="customSwitch6">Bouwpakket</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <h5>Locatie</h5>
+                    <div class="btn-block">
+                        <div>
+                            <button id="add_button_laadregels" type="button" class="btn btn-primary btn-lg btn-block mb-3" data-toggle="collapse" data-target="#laadregels">Laadregels</button>
+                        </div>
+                        <div id="laadregels" class="collapse mb-2">
+                            {% for i in session['str_package_lines_descriptions'] %}
+                            <div class="row">
+                                <div class="col-xs-3">
+                                    <div class="input-group xs-2">
+                                    <div class="input-group-prepend" style="display:inline-block;margin-left:20px;">
+                                      <button onclick="removeLoc('laadregel{{ loop.index }}', 'hidden_laadregel{{ loop.index }}')" class="btn btn-outline-danger" type="button">X</button>
+                                    </div>
+                                    <input type="text" name="locatieinput{{ loop.index }}" id="locatieinput{{ i.index }}" class="form-control" placeholder="" aria-label="Small" aria-describedby="basic-addon1-sizing-sm">
+                                  </div>
+                                </div>
+                                <div class="col">
+                                    <p type="text" name="laadregel{{ loop.index }}" id="laadregel{{ loop.index }}" class="col-9 d-flex justify-content-center"> {{ i }}</p>
+                                    <input hidden type="text" name="hidden_laadregel{{ loop.index }}" id="hidden_laadregel{{ loop.index }}" value="{{ i }}"></input>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div>
+                            <button id="add_button_depots" type="button" class="btn btn-primary btn-lg btn-block mb-3" data-toggle="collapse" data-target="#depot">Depot</button>
+                        </div>
+                        <div id="depot" class="collapse mb-2">
+                            <div>
+                                <select class="selectpicker ml-1" data-live-search="true" data-width="75%">
+                                    <option data-tokens="1">GA 01</option>
+                                    <option data-tokens="2">GA 02</option>
+                                    <option data-tokens="3">GA 03</option>
+                                    <option data-tokens="1">GE 01</option>
+                                    <option data-tokens="2">GE 02</option>
+                                    <option data-tokens="3">GE 03</option>
+                                    <option data-tokens="1">GF 01</option>
+                                    <option data-tokens="2">GF 02</option>
+                                    <option data-tokens="3">GF 03</option>
+                                  </select>
+                                  
+                                  
+                            </div>                            
+                        </div>
+                    </div>
+                
+                
+            </div>
+            <div class="col mb-5">
+                <div >
+                 <div>
+                  <h5 style="display:inline-block;">Notitie</h5>
+                 </div>
+                     <div>
+                       <button id="add_button" style="display:inline-block;margin-left:20px;" type="button" class="btn btn-outline-info" onClick="$('#add_button').hide()" data-toggle="collapse" data-target="#comments">Add</button>
+                     </div>
+                 <div id="comments" class="collapse ">
+                  <textarea style="resize:none;width:90%;" class="input xlarge" rows="4" id="comment-box" name="comment-box" placeholder="Typ hier je notitie...."></textarea>
+                 </div>
+                </div>
+            </div>
+            <div class="row">
+                
+                    <div class="col-sm">
+                        <button class="btn btn-danger btn-lg btn-block mb-3" href="#{{ url_for(predes) }}">Annuleer</button>
+                    </div>
+                    <div class="col-sm">
+                        
+                    </div>
+                    <div class="col-sm">
+                        <div class="form-group">
+                            {{ form.submit(class="btn btn-success btn-lg btn-block mb-3") }}
+                            
+                        </div>
+                    </div>
+                    
+                
+            </div>
+         </fieldset>
+    </form>
+</div>
+
+
+
+{% endblock content %}
