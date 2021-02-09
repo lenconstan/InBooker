@@ -2,6 +2,9 @@ import requests
 import json
 import datetime
 import math
+from app.dashfunctions import InputFunctions as inpf
+from app import ApiKeys
+
 
 def trim_input(string):
     string = string.strip()
@@ -205,8 +208,49 @@ def servicelevel(package_lines, tag_identifier, servicelevels):
     else:
         return 'Geen servicelevel aangegeven'
 
+def get_depot_id(token, depot_string):
+    url = "https://br8.freightlive.eu/api/v2/address"
+
+    payload= data ="{\n    \"options\": {\n        \"include_phone\": \"false\",\n        \"include_emails\": \"false\",\n        \"include_address_tags\": \"false\",\n        \"include_party_info\": \"false\",\n        \"include_address_type_names\": \"false\",\n        \"include_address_meta_data\": \"false\",\n        \"include_address_files\": \"false\",\n        \"include_address_notes\": \"false\"\n    },\n    \"filters\": {\n        \n        \"address_type_names\": \"depot\"\n    },\n    \n    \"limit\": \"200\",\n    \"offset\": \"0\",\n    \"search_text\": \"GE 05\"\n}"
+    headers = {
+    'Content-Type': 'application/json',
+    'token': token,
+    }
+    payload_dict = json.loads(data)
+    payload_dict['search_text'] = depot_string
+
+    response = requests.request("PUT", url, headers=headers, json=payload_dict)
+    
+    depot_id = ""
+    response_dict = json.loads(response.text)
+    if response.status_code == 200:
+        temp = inpf.safeget(response_dict, "items", na_value="Not availible")
+        if len(temp) == 1:
+            depot_id = inpf.safeget(temp[0], "id")
+        else:
+            depot_id = "unknown_id"
+
+    return depot_id, response.status_code
+
+def get_depot_name(token, depot_id):
+    url = "https://br8.freightlive.eu/api/v2/address/{}".format(depot_id)
+
+    payload={}
+    headers = {
+    'token': token
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+    response_dict = json.loads(response.text)
+    if response.status_code == 200:
+        return inpf.safeget(response_dict, "name_1")
+    else:
+        return "Geen depot"
+        
+
+
 def get_fulfillment_customer(token, id):
-    url = "https://br8.picqer.com/api/v1/fulfilment/customers/{}".format(id)
+    url = ApiKeys.PICQER_ENV + "/api/v1/fulfilment/customers/{}".format(id)
 
     payload={}
     headers = {
@@ -214,9 +258,9 @@ def get_fulfillment_customer(token, id):
     }
 
     response = requests.request("GET", url, headers=headers, data=payload)
-    response_dict = json.loads(response.text)
+    
 
     if response.status_code == 200:
-        return response_dict, response.status_code
+        return json.loads(response.text), response.status_code
     else:
-        pass
+        response.status_code, 500

@@ -20,6 +20,16 @@ font-family: 'Libre Barcode 39 Text';font-size: 50px;
 .c128 {
 font-family: 'Libre Barcode 128';font-size: 60px;
 }
+
+h1 {
+  font-weight: bold;
+  font-size: 23px;
+}
+
+h2 {
+  font-weight: bold;
+  font-size: 16px;
+}
 @media print {
         @page {
           size: A6 landscape; /* landscape */
@@ -32,9 +42,9 @@ font-family: 'Libre Barcode 128';font-size: 60px;
 </style>
 
 <body>
-  {% for i in range(1, template_data.products) %}
+  {% for i in range(template_data.products) %}
     <!-- <p><img src="https://1000logos.net/wp-content/uploads/2018/08/DHL-emblem.jpg" alt="ups logo" width="120" height="120"></p> -->
-    <h1 class='m700'>BR8 Ophalen</h0>
+    <h1 class='m700'>BR8 Ophalen</h1>
     <p>&nbsp;</p>
     <h1 id="mi" class="p2" style="text-align: center;"><strong>{{ template_data.fulfillmentcustomer }}<br/>{{ template_data.deliveryname }}<br/>{{ template_data.reference }}</strong></h1>
     <h2 id="id2" class="p2" style="text-align: center;">{{ template_data.picklistid }}<br/>Colli {{ loop.index }} van {{ template_data.products }}<br/></h2>

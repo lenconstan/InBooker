@@ -145,22 +145,27 @@ $('.selectpicker').selectpicker();
                         <div>
                             <button id="add_button_depots" type="button" class="btn btn-primary btn-lg btn-block mb-3" data-toggle="collapse" data-target="#depot">Depot</button>
                         </div>
-                        <div id="depot" class="collapse mb-2">
-                            <div>
-                                <select class="selectpicker ml-1" data-live-search="true" data-width="75%">
-                                    <option data-tokens="1">GA 01</option>
-                                    <option data-tokens="2">GA 02</option>
-                                    <option data-tokens="3">GA 03</option>
-                                    <option data-tokens="1">GE 01</option>
-                                    <option data-tokens="2">GE 02</option>
-                                    <option data-tokens="3">GE 03</option>
-                                    <option data-tokens="1">GF 01</option>
-                                    <option data-tokens="2">GF 02</option>
-                                    <option data-tokens="3">GF 03</option>
-                                  </select>
-                                  
-                                  
-                            </div>                            
+                        <div id="depot" name="depot" class="collapse mb-2">
+                            {% if depot_bool is true %}
+                                <div>
+                                    <h5>Deze order is ingeboekt op:</h5>
+                                    <h1>{{ session['depot'] }}</h1>
+                                </div>
+                            {% else %}
+                                <div>
+                                    <select class="selectpicker ml-1" style="max-height: 80px;" name="depotlocatie" id="depotlocatie" data-live-search="true" data-width="75%" mobile="true">
+                                        <option data-tokens="1">Selecteer depot</option>
+                                        {% if depotlist %}
+                                            {% for i in depotlist %}
+                                                <option data-tokens="1">{{ i }}</option>
+                                            {% endfor %}
+                                        {% endif %}
+                                        
+                                        
+                                    </select>                                    
+                                </div>                                  
+                            {% endif %}
+                                                      
                         </div>
                     </div>
                 
@@ -181,9 +186,11 @@ $('.selectpicker').selectpicker();
             </div>
             <div class="row">
                 
-                    <div class="col-sm">
-                        <button class="btn btn-danger btn-lg btn-block mb-3" href="#{{ url_for(predes) }}">Annuleer</button>
-                    </div>
+                    <!-- <div class="col-sm">
+                        
+                            <button class="btn btn-danger btn-lg btn-block mb-3">Annuleer</button>
+                        
+                    </div> -->
                     <div class="col-sm">
                         
                     </div>

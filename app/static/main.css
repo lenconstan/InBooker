@@ -128,3 +128,12 @@ tr.hide-table-padding td {
 {
   content: '+';
 }
+
+div.dropdown-menu.open{
+  max-height: 280px !important;
+  overflow: hidden;
+}
+ul.dropdown-menu.inner{
+  max-height: 230px !important;
+  overflow-y: auto;
+}

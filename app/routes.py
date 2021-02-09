@@ -9,13 +9,14 @@ from flask import request
 from sqlalchemy import func
 import json
 import requests
-from app.apifunctions import get_activity, update_activity, check_token, servicelevel, get_route_data, get_nextday_activity, get_activity_paginated, get_fulfillment_customer
+from app.apifunctions import get_activity, update_activity, check_token, servicelevel, get_route_data, get_nextday_activity, get_activity_paginated, get_fulfillment_customer, get_depot_id, get_depot_name
 from app.dashfunctions import TimeFunctions as tf, InputFunctions as inpf, CostFunctions as cf
 import time
 import dateutil.parser as dparser
 from app import mul, itemgetter
 from app.labelmaker import gen_pdf
 from app.mailclient import MailClient
+import io
 
 
 @app.route('/api/custshipping', methods=['GET', 'POST'])
@@ -23,8 +24,10 @@ def custshipping():
 
     content = request.json
     content_dict = content
+    
 
-    fulfillment_cust_id = inpf.safeget(content_dict, 'picklist', 'idfulfilment_customer')
+    fulfillment_cust_id = inpf.safeget(content_dict, 'picklist', 'idfulfilment_customer', na_value=0000)
+    
     #get fulfillment customer data
     fulfillment_cust = get_fulfillment_customer(ApiKeys.PICQER_API_KEY, fulfillment_cust_id)
     status_code = fulfillment_cust[1]
@@ -50,10 +53,14 @@ def custshipping():
     template_data['picklistid'] = inpf.safeget(content, 'picklist', 'picklistid')
     template_data['products'] = int(inpf.safeget(content, 'weight', na_value=1))
 
+    print(template_data['products'])
+    
+    if template_data['products'] == 0: #ensures that 1 label will always be returned
+        template_data['products'] = 1
+
     if template_data['products'] > 30:
         template_data['products'] = 30
 
-    print(type(template_data['products']))
 
     try:
         label = gen_pdf(render_template('label.html', template_data=template_data, test='test'))
@@ -542,6 +549,15 @@ def order(predes):
     session['update_dict'] = {}
     session['servicelevel'] = servicelevel(order_dict['tags'], "tag_type_name", ['Overalinhuis', 'Gebruiksklaar', 'Project'])
 
+    depotlist = json.loads(db.get("depotlocaties"))
+    depot_val = inpf.safeget(order_dict, "depot_address_id")
+    depot_bool = False
+    if depot_val is not None:
+        session['depot'] = get_depot_name(session['token'], inpf.safeget(order_dict, "depot_address_id"))
+        depot_bool = True
+    else:
+        session['depot'] = "Geen depot"
+
     #add current tags to dict that will be posted to retain current tags
     session['update_dict']['tags'] = order_dict['tags']
     session['update_dict']['package_lines'] = order_dict['package_lines']
@@ -582,8 +598,22 @@ def order(predes):
             if session['str_package_lines_descriptions'][i] != request.form.get('hidden_laadregel' + str(i+1)):
                 session['update_dict']['package_lines'][i]['description'] = request.form.get('hidden_laadregel' + str(i+1))
             if request.form.get('locatieinput' + str(i+1)) != '':
-                session['update_dict']['package_lines'][i]['description'] = '[' + str(request.form.get('locatieinput' + str(i+1))) + ' ' + session['initials'] + ' '  + str(date.today().strftime("%d%m")) + ']' +  session['update_dict']['package_lines'][i]['description']
+                session['update_dict']['package_lines'][i]['description'] = '[' + str(request.form.get('locatieinput' + str(i+1))).upper() + ' ' + session['initials'] + ' '  + str(date.today().strftime("%d%m")) + ']' +  session['update_dict']['package_lines'][i]['description']
         
+        #depots
+        
+        if depot_bool is False:
+            if request.form.get("depotlocatie") != "Selecteer depot":
+                #get the bumbal id for the depotlocation
+                dpo = get_depot_id(session['token'], request.form.get("depotlocatie"))
+                if dpo[1] == 200:
+                    session['update_dict']['depot_address_id'] = dpo[0]
+                else:
+                    flash('Depotlocatie onbekend in Bumbal, check of de aangegeven depotlocatie daadwerkelijk in Bumbal staat', 'danger')
+                    return redirect(url_for(predes))
+                
+            
+
         #notes
         if request.form.get("comment-box") != '':
             session['update_dict']['notes'] = order_dict['notes']
@@ -603,16 +633,16 @@ def order(predes):
         #update activity
         if bool(session['update_dict']) is True:
             udac = update_activity(session['activityid'], session['update_dict'], session['token'])
+            print(udac)
             if udac == 200:
                 update_rel_db(inpf.safeget(order_dict, "reference"), inpf.safeget(order_dict, "id"), session['initials'])
                 flash('Activiteit succesvol aangepast!', 'success')
                 udac == 0
                 return redirect(url_for(predes))
             else:
-                redirect(url_for('error'))
-
+                return 500
     # return render_template('order.html', title='Order', form=form)
-    return render_template('order2.html', title='Order', form=form, predes=predes)
+    return render_template('order2.html', title='Order', form=form, predes=predes, depot_bool=depot_bool, depotlist=depotlist)
 
 
 @app.route('/scoreboard', methods=['GET'])
@@ -631,3 +661,17 @@ def scoreboard():
     print(leaderboard)
         
     return render_template('scoreboard.html', title='Activiteit ophalen', leaderboard=leaderboard)
+
+@app.route('/depotlocations', methods=['GET', 'POST'])
+@identificate
+def depotlocations():
+    """Let the user input the locations as a csv string, transform the csv into a string and store 
+    it in the database. These depot values are used in the order route to provide the depot aliasses to the view. """
+    form = OrderForm()
+    if request.method == 'POST':
+        if request.form.get("depotlocaties") != "":
+            locaties = request.form.get("depotlocaties").split(",")
+            db.set('depotlocaties', json.dumps(locaties))
+            flash("Depotlocaties geupdate!", "success")
+        return redirect(url_for('depotlocations'))
+    return render_template('upload.html', title='Upload csv', form=form)

@@ -13,4 +13,9 @@ class Updated(rel_db.Model):
     def __repr__(self):
         return str(self.today)
 
+class Depot(rel_db.Model):
+    id = rel_db.Column(rel_db.Integer, primary_key=True)
+    location = rel_db.Column(rel_db.String(20), index=True)
+    bumbal_id = rel_db.Column(rel_db.String(20), index=True)
+
 
