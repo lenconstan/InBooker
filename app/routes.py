@@ -549,7 +549,7 @@ def order(predes):
     if inpf.safeget(order_dict, 'date_time_from') != 'null':
         try:
             session['planned_date'] = datetime.strptime(inpf.safeget(order_dict, 'date_time_from').split(' ')[0], '%Y-%m-%d').strftime('%d-%m')
-        except TypeError:
+        except AttributeError:
             pass
         
 
