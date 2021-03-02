@@ -223,9 +223,10 @@ def get_depot_id(token, depot_string):
     
     depot_id = ""
     response_dict = json.loads(response.text)
+    
     if response.status_code == 200:
         temp = inpf.safeget(response_dict, "items", na_value="Not availible")
-        if len(temp) == 1:
+        if len(temp) >= 1:
             depot_id = inpf.safeget(temp[0], "id")
         else:
             depot_id = "unknown_id"
@@ -264,3 +265,35 @@ def get_fulfillment_customer(token, id):
         return json.loads(response.text), response.status_code
     else:
         response.status_code, 500
+
+def get_addresses_paginated(token, search_text):
+    """Get all activities on basis of route id's."""
+    def append_items(append_to, append_from):
+        try:
+            append_to.append(append_from)
+        except KeyError:
+            print('error')
+
+    items = []
+    offset = 0
+
+    url = "https://br8.freightlive.eu/api/v2/address"
+    payload = data ="{\n    \"options\": {\n        \"include_phone\": \"false\",\n        \"include_emails\": \"false\",\n        \"include_address_tags\": \"false\",\n        \"include_party_info\": \"false\",\n        \"include_address_type_names\": \"false\",\n        \"include_address_meta_data\": \"false\",\n        \"include_address_files\": \"false\",\n        \"include_address_notes\": \"false\"\n    },\n    \"filters\": {\n        \n        \"address_type_names\": \"Depot\"\n        \n    },\n    \n    \"limit\": \"200\",\n    \"offset\": \"0\",\n    \"search_text\": \"Tasveld\"\n}"
+
+    payload_dict = json.loads(data)
+    payload_dict['search_text'] = search_text
+
+    headers = {
+      'token': token
+    }
+
+    response = requests.request("PUT", url, headers=headers, json=payload_dict)
+    respons_dict = json.loads(response.text)
+
+    #Handle pagination
+    for i in range(math.ceil(int(respons_dict["count_filtered"])/100)):
+        payload_dict['offset'] = i*100
+        response = requests.request("PUT", url, headers=headers, json=payload_dict)
+        items += json.loads(response.text)["items"]
+
+    return items, response.status_code

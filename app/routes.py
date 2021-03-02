@@ -9,7 +9,7 @@ from flask import request
 from sqlalchemy import func
 import json
 import requests
-from app.apifunctions import get_activity, update_activity, check_token, servicelevel, get_route_data, get_nextday_activity, get_activity_paginated, get_fulfillment_customer, get_depot_id, get_depot_name
+from app.apifunctions import get_activity, update_activity, check_token, servicelevel, get_route_data, get_nextday_activity, get_activity_paginated, get_fulfillment_customer, get_depot_id, get_depot_name, get_addresses_paginated
 from app.dashfunctions import TimeFunctions as tf, InputFunctions as inpf, CostFunctions as cf
 import time
 import dateutil.parser as dparser
@@ -200,6 +200,7 @@ def routes_query_two():
     rev_min = float(Costs.MIN_REV)
     stop_revs = json.loads(Costs.STOP_REVS)
     types = json.loads(Costs.TYPES)
+    print(types)
 
     #collect route data
     routes_list = []
@@ -226,10 +227,10 @@ def routes_query_two():
                         'reference': inpf.safeget(k, 'reference'),
                         'party_name': inpf.safeget(k, 'assignment', 'party_name'),
                         'duration': inpf.safeget(k, 'duration'),
-                        'servicelevel': servicelevel(inpf.safeget(k, 'tags'), "tag_type_name", ['Overalinhuis', 'Gebruiksklaar', 'Project', 'Ophalen+Verpakken (kwetsbaar)', 'Ophalen', 'Magazijnretour', 'Beganegrond', 'Magazijn Ophalen']),
+                        'servicelevel': servicelevel(inpf.safeget(k, 'tags'), "tag_type_name", ['Overalinhuis', 'Gebruiksklaar', 'Project', 'Ophalen+Verpakken (kwetsbaar)', 'Ophalen', 'Magazijnretour', 'Beganegrond', 'Magazijn Ophalen', 'Omruiling Gebruiksklaar', 'Omruiling Overalinhuis']),
                         'manpower': (lambda x : '2mans' if x == '2mans' else '1mans')(temp),
-                        'stop_rev': cf.ind_stop_rev(types, servicelevel(inpf.safeget(k, 'tags'), "tag_type_name", ['Overalinhuis', 'Gebruiksklaar', 'Project', 'Ophalen+Verpakken (kwetsbaar)', 'Ophalen', 'Magazijnretour', 'Beganegrond', 'Magazijn Ophalen']), (lambda x : '2mans' if x == '2mans' else '1mans')(temp), inpf.safeget(k, 'assignment', 'party_name'), 1, int(inpf.safeget(k, 'duration')))}
-                        route_rev+=cf.ind_stop_rev(types, servicelevel(inpf.safeget(k, 'tags'), "tag_type_name", ['Overalinhuis', 'Gebruiksklaar', 'Project', 'Ophalen+Verpakken (kwetsbaar)', 'Ophalen', 'Magazijnretour', 'Beganegrond', 'Magazijn Ophalen']), (lambda x : '2mans' if x == '2mans' else '1mans')(temp), inpf.safeget(k, 'assignment', 'party_name'), 1, int(inpf.safeget(k, 'duration')))
+                        'stop_rev': cf.ind_stop_rev(types, servicelevel(inpf.safeget(k, 'tags'), "tag_type_name", ['Overalinhuis', 'Gebruiksklaar', 'Project', 'Ophalen+Verpakken (kwetsbaar)', 'Ophalen', 'Magazijnretour', 'Beganegrond', 'Magazijn Ophalen', 'Omruiling Gebruiksklaar', 'Omruiling Overalinhuis']), (lambda x : '2mans' if x == '2mans' else '1mans')(temp), inpf.safeget(k, 'assignment', 'party_name'), 1, int(inpf.safeget(k, 'duration')))}
+                        route_rev+=cf.ind_stop_rev(types, servicelevel(inpf.safeget(k, 'tags'), "tag_type_name", ['Overalinhuis', 'Gebruiksklaar', 'Project', 'Ophalen+Verpakken (kwetsbaar)', 'Ophalen', 'Magazijnretour', 'Beganegrond', 'Magazijn Ophalen', 'Omruiling Gebruiksklaar', 'Omruiling Overalinhuis']), (lambda x : '2mans' if x == '2mans' else '1mans')(temp), inpf.safeget(k, 'assignment', 'party_name'), 1, int(inpf.safeget(k, 'duration')))
             t_rl_i = routes_list[routes_list.index(i)]
             t_rl_i['exp_rev'] = route_rev
             t_rl_i['exp_margin'] = cf.margin(t_rl_i['exp_costs'], t_rl_i['exp_rev'])
@@ -543,13 +544,17 @@ def order(predes):
     session['assingment_party_name'] = order_dict['assignment']['party_name']
     session['name'] = order_dict['address']['full_name']
     session['activityid'] = order_dict['id']
+    session['planned_date'] = 'Nog niet bekend'
+    if inpf.safeget(order_dict, 'date_time_from') != 'null':
+        session['planned_date'] = datetime.strptime(inpf.safeget(order_dict, 'date_time_from').split(' ')[0], '%Y-%m-%d').strftime('%d-%m')
+        
 
     session['saywhen'] = order_dict['communication']['saywhen'] # if this variable is '1' Saywhen is activated, if '0' saywehen is not activated
     session['str_package_lines_descriptions'] = [m + 'x '+n for m,n in zip([i['nr_of_packages'].split('.')[0] for i in order_dict['package_lines']],[i['description'] for i in order_dict['package_lines']])]
     session['update_dict'] = {}
     session['servicelevel'] = servicelevel(order_dict['tags'], "tag_type_name", ['Overalinhuis', 'Gebruiksklaar', 'Project'])
 
-    depotlist = json.loads(db.get("depotlocaties"))
+    depots_dict = json.loads(db.get("depotlocaties"))
     depot_val = inpf.safeget(order_dict, "depot_address_id")
     depot_bool = False
     if depot_val is not None:
@@ -600,20 +605,11 @@ def order(predes):
             if request.form.get('locatieinput' + str(i+1)) != '':
                 session['update_dict']['package_lines'][i]['description'] = '[' + str(request.form.get('locatieinput' + str(i+1))).upper() + ' ' + session['initials'] + ' '  + str(date.today().strftime("%d%m")) + ']' +  session['update_dict']['package_lines'][i]['description']
         
-        #depots
-        
         if depot_bool is False:
             if request.form.get("depotlocatie") != "Selecteer depot":
                 #get the bumbal id for the depotlocation
-                dpo = get_depot_id(session['token'], request.form.get("depotlocatie"))
-                if dpo[1] == 200:
-                    session['update_dict']['depot_address_id'] = dpo[0]
-                else:
-                    flash('Depotlocatie onbekend in Bumbal, check of de aangegeven depotlocatie daadwerkelijk in Bumbal staat', 'danger')
-                    return redirect(url_for(predes))
+                session['update_dict']['depot_address_id'] = depots_dict[request.form.get("depotlocatie")]
                 
-            
-
         #notes
         if request.form.get("comment-box") != '':
             session['update_dict']['notes'] = order_dict['notes']
@@ -642,7 +638,7 @@ def order(predes):
             else:
                 return 500
     # return render_template('order.html', title='Order', form=form)
-    return render_template('order2.html', title='Order', form=form, predes=predes, depot_bool=depot_bool, depotlist=depotlist)
+    return render_template('order2.html', title='Order', form=form, predes=predes, depot_bool=depot_bool, depotlist=depots_dict)
 
 
 @app.route('/scoreboard', methods=['GET'])
@@ -668,10 +664,14 @@ def depotlocations():
     """Let the user input the locations as a csv string, transform the csv into a string and store 
     it in the database. These depot values are used in the order route to provide the depot aliasses to the view. """
     form = OrderForm()
+    # print(get_addresses_paginated(session['token'], "Tasveld")[0])
     if request.method == 'POST':
-        if request.form.get("depotlocaties") != "":
-            locaties = request.form.get("depotlocaties").split(",")
-            db.set('depotlocaties', json.dumps(locaties))
-            flash("Depotlocaties geupdate!", "success")
+        depots_data = get_addresses_paginated(session['token'], "Tasveld")[0]
+        depots_dict = {}
+        for i in depots_data:
+            depots_dict[inpf.safeget(i, 'name_1', na_value='Niet beschikbaar')] = inpf.safeget(i, 'id', na_value=0)
+        db.set('depotlocaties', json.dumps(depots_dict))
+        flash("Depotlocaties geupdate!", "success")
         return redirect(url_for('depotlocations'))
+        
     return render_template('upload.html', title='Upload csv', form=form)

@@ -49,6 +49,10 @@ $('.selectpicker').selectpicker();
                             <th>Servicelevel:  </th>
                             <td>{{ session['servicelevel'] }}</td>
                           </tr>
+                          <tr>
+                            <th>Gepland:  </th>
+                            <td>{{ session['planned_date'] }}</td>
+                          </tr>
                         </table>
                     </div>
                 </div>
@@ -177,7 +181,7 @@ $('.selectpicker').selectpicker();
                   <h5 style="display:inline-block;">Notitie</h5>
                  </div>
                      <div>
-                       <button id="add_button" style="display:inline-block;margin-left:20px;" type="button" class="btn btn-outline-info" onClick="$('#add_button').hide()" data-toggle="collapse" data-target="#comments">Add</button>
+                       <button id="add_button" style="display:inline-block;" type="button" class="btn btn-primary" onClick="$('#add_button').hide()" data-toggle="collapse" data-target="#comments">Add</button>
                      </div>
                  <div id="comments" class="collapse ">
                   <textarea style="resize:none;width:90%;" class="input xlarge" rows="4" id="comment-box" name="comment-box" placeholder="Typ hier je notitie...."></textarea>
