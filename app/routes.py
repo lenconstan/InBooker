@@ -544,7 +544,7 @@ def order(predes):
     session['assingment_party_name'] = order_dict['assignment']['party_name']
     session['name'] = order_dict['address']['full_name']
     session['activityid'] = order_dict['id']
-    session['planned_date'] = 'TBC'
+    session['planned_date'] = 'Nog niet bekend'
     
     if inpf.safeget(order_dict, 'date_time_from') != 'null':
         try:
