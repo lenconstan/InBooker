@@ -545,8 +545,12 @@ def order(predes):
     session['name'] = order_dict['address']['full_name']
     session['activityid'] = order_dict['id']
     session['planned_date'] = 'TBC'
-    #if inpf.safeget(order_dict, 'date_time_from') != 'null':
-    #    session['planned_date'] = datetime.strptime(inpf.safeget(order_dict, 'date_time_from').split(' ')[0], '%Y-%m-%d').strftime('%d-%m')
+    
+    if inpf.safeget(order_dict, 'date_time_from') != 'null':
+        try:
+            session['planned_date'] = datetime.strptime(inpf.safeget(order_dict, 'date_time_from').split(' ')[0], '%Y-%m-%d').strftime('%d-%m')
+        except TypeError:
+            pass
         
 
     session['saywhen'] = order_dict['communication']['saywhen'] # if this variable is '1' Saywhen is activated, if '0' saywehen is not activated
