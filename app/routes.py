@@ -544,9 +544,9 @@ def order(predes):
     session['assingment_party_name'] = order_dict['assignment']['party_name']
     session['name'] = order_dict['address']['full_name']
     session['activityid'] = order_dict['id']
-    session['planned_date'] = 'Nog niet bekend'
-    if inpf.safeget(order_dict, 'date_time_from') != 'null':
-        session['planned_date'] = datetime.strptime(inpf.safeget(order_dict, 'date_time_from').split(' ')[0], '%Y-%m-%d').strftime('%d-%m')
+    session['planned_date'] = 'TBC'
+    #if inpf.safeget(order_dict, 'date_time_from') != 'null':
+    #    session['planned_date'] = datetime.strptime(inpf.safeget(order_dict, 'date_time_from').split(' ')[0], '%Y-%m-%d').strftime('%d-%m')
         
 
     session['saywhen'] = order_dict['communication']['saywhen'] # if this variable is '1' Saywhen is activated, if '0' saywehen is not activated
