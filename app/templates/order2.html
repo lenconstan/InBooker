@@ -63,14 +63,14 @@ $('.selectpicker').selectpicker();
                     <h5>SayWhen</h5>
                     <div class="row">
                         <div class="col">
-
+                            <!-- Bumbal Comminucation -->
                             <div class="custom-control custom-switch">
-                                {% if session['saywhen'] == '1' %}
-                                <input type="checkbox" name="saywhen_switch" class="custom-control-input" disabled id="customSwitch1" checked>
-                                {% elif session['saywhen'] == '0' %}
-                                <input type="checkbox" name="saywhen_switch" class="custom-control-input" id="customSwitch1">
+                                {% if (session['bumbal_invite'] == '1') and (session['bumbal_reminder'] == '1') %}
+                                <input type="checkbox" name="communication_switch" class="custom-control-input" disabled id="customSwitch1" checked>
+                                {% elif (session['bumbal_invite'] == '0') and (session['bumbal_reminder'] == '0') %}
+                                <input type="checkbox" name="communication_switch" class="custom-control-input" id="customSwitch1">
                                 {% endif %}
-                                <label class="custom-control-label" for="customSwitch1">Activeer SayWhen</label>
+                                <label class="custom-control-label" for="customSwitch1">Activeer Bumbal Communicatie</label>
                             </div>
                         </div>
                     </div>

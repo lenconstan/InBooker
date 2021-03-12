@@ -553,7 +553,15 @@ def order(predes):
             pass
         
 
-    session['saywhen'] = order_dict['communication']['saywhen'] # if this variable is '1' Saywhen is activated, if '0' saywehen is not activated
+    # session['saywhen'] = order_dict['communication']['saywhen'] # if this variable is '1' Saywhen is activated, if '0' saywehen is not activated OBSOLETE ---> Bubmal comminucation
+    #Bumbal comminucation
+    session['bumbal_comminucation'] = order_dict['communication']['bumbal']
+    print(session['bumbal_comminucation'])
+    session['bumbal_invite'] = order_dict['communication']['send_invite']
+    session['bumbal_reminder'] = order_dict['communication']['send_reminder']
+    print(session['bumbal_invite'])
+    print(session['bumbal_reminder'])
+
     session['str_package_lines_descriptions'] = [m + 'x '+n for m,n in zip([i['nr_of_packages'].split('.')[0] for i in order_dict['package_lines']],[i['description'] for i in order_dict['package_lines']])]
     session['update_dict'] = {}
     session['servicelevel'] = servicelevel(order_dict['tags'], "tag_type_name", ['Overalinhuis', 'Gebruiksklaar', 'Project'])
@@ -584,11 +592,15 @@ def order(predes):
     # get form toggle state
     if form.validate_on_submit():
         #saywhen
-        if session['saywhen'] == '0' and request.form.get('saywhen_switch') == 'on':
-            session['update_dict']['communication'] = {'saywhen': '1', 'send_invite': '1'}
+        # if session['saywhen'] == '0' and request.form.get('saywhen_switch') == 'on':
+        #     session['update_dict']['communication'] = {'saywhen': '1', 'send_invite': '1'}
+        #     session['update_dict']['reference'] =  '*' + order_dict['reference']
+        # else:
+        #     pass
+        if session['bumbal_invite'] == '0' and session['bumbal_reminder'] == '0' and request.form.get('saywhen_switch') == 'on':
+            print('lol')
+            session['update_dict']['communication'] = {'send_invite': '1', 'send_reminder': '1'}
             session['update_dict']['reference'] =  '*' + order_dict['reference']
-        else:
-            pass
 
         #tags
         if session['bool_2mans'] == False and request.form.get('tweemans_switch') == 'on':
@@ -633,7 +645,7 @@ def order(predes):
         #update activity
         if bool(session['update_dict']) is True:
             udac = update_activity(session['activityid'], session['update_dict'], session['token'])
-            print(udac)
+            # print(udac)
             if udac == 200:
                 update_rel_db(inpf.safeget(order_dict, "reference"), inpf.safeget(order_dict, "id"), session['initials'])
                 flash('Activiteit succesvol aangepast!', 'success')
